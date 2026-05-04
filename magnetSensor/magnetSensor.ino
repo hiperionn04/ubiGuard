@@ -1,5 +1,5 @@
-#define DOOR_SENSOR_PIN 4   // GPIO4 - MC-38 (sensor magnético)
-#define PIR_SENSOR_PIN  5   // GPIO5 - HC-SR501 (sensor de movimento)
+#define DOOR_SENSOR_PIN 35   // GPIO4 - MC-38 (sensor magnético)
+#define PIR_SENSOR_PIN  34   // GPIO5 - HC-SR501 (sensor de movimento)
 
 int lastDoorState = HIGH;   // MC-38: HIGH = fechado, LOW = aberto
 int lastPirState = LOW;     // PIR: HIGH = movimento detetado, LOW = sem movimento
@@ -40,4 +40,6 @@ void loop() {
     }
     lastPirState = currentPirState;
   }
+
+  
 }
