@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">UbiGuard</string>
+    <string name="app_title">UbiGuard</string>
+    <string name="acesso_owner">Acesso Owner</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="acesso_rapido">Acesso Rápido (Child / Guest)</string>
+    <string name="inserir_pin_ex">Inserir PIN (ex: 1234)</string>
+    <string name="entrar_com_pin">Entrar com PIN</string>
+</resources>
