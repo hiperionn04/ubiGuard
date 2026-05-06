@@ -1,11 +1,36 @@
 <resources>
     <string name="app_name">UbiGuard</string>
-    <string name="app_title">UbiGuard</string>
-    <string name="acesso_owner">Acesso Owner</string>
-    <string name="email">Email</string>
-    <string name="password">Password</string>
-    <string name="login">Login</string>
-    <string name="acesso_rapido">Acesso Rápido (Child / Guest)</string>
-    <string name="inserir_pin_ex">Inserir PIN (ex: 1234)</string>
-    <string name="entrar_com_pin">Entrar com PIN</string>
+
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_login_owner">Entrar</string>
+    <string name="btn_login_pin">Entrar com PIN</string>
+
+    <string name="login">Logótipo UbiGuard</string>
+    <string name="acesso_owner">Acesso Cliente</string>
+    <string name="acesso_rapido">Acesso rápido (PIN)</string>
+    <string name="password">••••</string>
+
+    <string name="btn_entrar">Entrar</string>
+    <string name="nao_tem_conta">Não tens conta? Regista-te aqui.</string>
+    <string name="btn_registar">Criar Conta</string>
+    <string name="ja_tem_conta">Já tens conta? Entra aqui.</string>
+
+    <string name="hint_nome">Nome Completo</string>
+    <string name="hint_morada">Morada Principal</string>
+    <string name="titulo_registo">Novo Utilizador</string>
+
+    <!-- Dashboard -->
+    <string name="title_dashboard">Painel de Controlo</string>
+    <string name="status_disarmed">Desarmado</string>
+    <string name="status_armed">Armado</string>
+    <string name="btn_arm">Armar Sistema</string>
+    <string name="btn_disarm">Desarmar Sistema</string>
+    <string name="down_system">Sistema em baixo</string>
+
+    <string name="menu_perfil">Perfil</string>
+    <string name="menu_alarmes">Alarmes</string>
+    <string name="menu_logout">Terminar Sessão</string>
+
+    <string name="nenhum_alarme">Nenhum alarme configurado.</string>
 </resources>

@@ -2,11 +2,14 @@ package pt.fct.unl.sim.ubiguard
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
 import com.google.firebase.auth.FirebaseAuth
+import pt.fct.unl.sim.ubiguard.RegisterActivity
+import pt.fct.unl.sim.ubiguard.MainActivity
 
 class LoginActivity : AppCompatActivity() {
 
@@ -18,53 +21,44 @@ class LoginActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
+        if (auth.currentUser != null) {
+            goToDashboard()
+        }
+
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
-        val btnLoginOwner = findViewById<Button>(R.id.btnLoginOwner)
+        val btnLogin = findViewById<AppCompatButton>(R.id.btnLogin)
+        val tvGoToRegister = findViewById<TextView>(R.id.tvGoToRegister)
 
-        val etPin = findViewById<EditText>(R.id.etPin)
-        val btnLoginPin = findViewById<Button>(R.id.btnLoginPin)
+        tvGoToRegister.setOnClickListener {
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
+        }
 
-        btnLoginOwner.setOnClickListener {
-            val email = etEmail.text.toString()
-            val password = etPassword.text.toString()
+        btnLogin.setOnClickListener {
+            val email = etEmail.text.toString().trim()
+            val password = etPassword.text.toString().trim()
 
-            if (email.isNotEmpty() && password.isNotEmpty()) {
-                auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this) { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(this, "Bem-vindo, Owner!", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(this, MainActivity::class.java)
-                            startActivity(intent)
-                            finish()
-                        } else {
-                            Toast.makeText(this, "Erro: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-                        }
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Preenche o email e a password.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "Bem-vindo!", Toast.LENGTH_SHORT).show()
+                        goToDashboard()
+                    } else {
+                        Toast.makeText(this, "Erro ao entrar: Dados incorretos.", Toast.LENGTH_SHORT).show()
                     }
-            } else {
-                Toast.makeText(this, "Preenche o email e password", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        btnLoginPin.setOnClickListener {
-            val pin = etPin.text.toString()
-
-            if (pin.isNotEmpty()) {
-                /*
-                 * Futuramente, vamos ligar isto à Firebase Realtime Database
-                 * para verificar se o PIN existe e se o temporizador (Guest) ainda é válido.
-                 * Por agora, usamos um PIN falso de teste:
-                 */
-                if (pin == "1234") {
-                    Toast.makeText(this, "Acesso Concedido (Guest)", Toast.LENGTH_SHORT).show()
-                    // val intent = Intent(this, GuestActivity::class.java)
-                    // startActivity(intent)
-                } else {
-                    Toast.makeText(this, "PIN Incorreto", Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(this, "Insere um PIN válido", Toast.LENGTH_SHORT).show()
-            }
         }
+    }
+
+    private fun goToDashboard() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }

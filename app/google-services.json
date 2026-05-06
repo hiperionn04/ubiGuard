@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "428628768894",
+    "firebase_url": "https://ubiguard-sim-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "ubiguard-sim",
     "storage_bucket": "ubiguard-sim.firebasestorage.app"
   },
