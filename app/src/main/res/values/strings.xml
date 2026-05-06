@@ -33,4 +33,27 @@
     <string name="menu_logout">Terminar Sessão</string>
 
     <string name="nenhum_alarme">Nenhum alarme configurado.</string>
+
+    <string name="btn_activar_alarme">Activar Alarme</string>
+    <string name="btn_associar_alarme">Associar Alarme</string>
+    <string name="menu_dashboard">Dashboard</string>
+    <string name="menu_sensores">Sensores</string>
+    <string name="menu_logs">Logs</string>
+    <string name="nome">Nome</string>
+    <string name="email_exemplo">email@exemplo.com</string>
+    <string name="tipo_de_conta">Tipo de Conta: </string>
+    <string name="user">User</string>
+    <string name="voltar_dashboard">Voltar ao Dashboard</string>
+    <string name="menu">Menu</string>
+    <string name="todos_os_alarmes">Todos os Alarmes</string>
+    <string name="todos">Todos</string>
+    <string name="pesquisar_nome_ou_morada">Pesquisar nome ou morada...</string>
+    <string name="nome_do_sensor">Nome do Sensor</string>
+    <string name="ativo">Ativo</string>
+    <string name="ltima_leitura">Última leitura:</string>
+    <string name="insere_procurar_sensores">Insere um ID para procurar sensores.</string>
+    <string name="procurar">Procurar</string>
+    <string name="id_do_alarme">ID do Alarme...</string>
+    <string name="estado_dos_sensores">Estado dos Sensores</string>
+    <string name="logs_do_alarme">Logs do Alarme</string>
 </resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Cor quando a bolinha ESTÁ selecionada (O teu Azul Ciano) -->
+    <item android:color="#00D0FF" android:state_checked="true" />
+
+    <!-- Cor quando a bolinha NÃO está selecionada (Cinzento discreto) -->
+    <item android:color="#7A8B99" android:state_checked="false" />
+
+    <!-- Cor por defeito de segurança -->
+    <item android:color="#7A8B99" />
+</selector>

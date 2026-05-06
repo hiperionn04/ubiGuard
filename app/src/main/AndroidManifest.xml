@@ -42,6 +42,27 @@
             android:name=".MainActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ProfileActivity" />
+
+        <activity
+            android:name=".InstallerAlarmsActivity" />
+
+        <activity
+            android:name=".InstallerSensorsActivity" />
+
+        <activity
+            android:name=".InstallerLogsActivity" />
+
+        <activity
+            android:name=".AlarmDetailsActivity" />
+
+        <activity
+            android:name=".UserAlarmDetailsActivity" />
+
+        <activity
+            android:name=".UserLogsActivity" />
+
     </application>
 
 </manifest>

@@ -1,112 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    android:fillViewport="true">
+    android:background="#000000">
 
-    <LinearLayout
+    <!-- 1. O teu formulário normal (agora embrulhado no RelativeLayout) -->
+    <ScrollView
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp">
+            <!-- NOTA: Mudei o gravity ali em cima para "center".
+                 Isto vai centrar o teu formulário todo verticalmente no ecrã! -->
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                android:contentDescription=""
+                android:scaleType="fitCenter"
+                android:src="@drawable/logo_ubiguard" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="@string/titulo_registo"
+                android:textColor="#00D0FF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:gravity="center"/>
+
+            <EditText
+                android:id="@+id/etRegName"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginBottom="12dp"
+                android:autofillHints=""
+                android:background="@drawable/bg_input"
+                android:hint="@string/hint_nome"
+                android:inputType="textPersonName"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#4A4A4A" />
+
+            <EditText
+                android:id="@+id/etRegAddress"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginBottom="12dp"
+                android:autofillHints=""
+                android:background="@drawable/bg_input"
+                android:hint="@string/hint_morada"
+                android:inputType="textPostalAddress"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#4A4A4A" />
+
+            <EditText
+                android:id="@+id/etRegEmail"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginBottom="12dp"
+                android:autofillHints=""
+                android:background="@drawable/bg_input"
+                android:hint="@string/hint_email"
+                android:inputType="textEmailAddress"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#4A4A4A" />
+
+            <EditText
+                android:id="@+id/etRegPassword"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginBottom="32dp"
+                android:background="@drawable/bg_input"
+                android:hint="@string/hint_password"
+                android:inputType="textPassword"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#4A4A4A" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnRegisterSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_button"
+                android:text="@string/btn_registar"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvGoToLogin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/ja_tem_conta"
+                android:textColor="#4A4A4A"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:padding="8dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBarRegister"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="32dp">
+        android:layout_centerInParent="true"
+        android:indeterminateTint="#00D0FF"
+        android:visibility="gone" />
 
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp"
-            android:contentDescription=""
-            android:scaleType="fitCenter"
-            android:src="@drawable/logo_ubiguard" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/titulo_registo"
-            android:textColor="#00D0FF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.1"
-            android:gravity="center"/>
-
-        <EditText
-            android:id="@+id/etRegName"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginBottom="12dp"
-            android:autofillHints=""
-            android:background="@drawable/bg_input"
-            android:hint="@string/hint_nome"
-            android:inputType="textPersonName"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#4A4A4A" />
-
-        <EditText
-            android:id="@+id/etRegAddress"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginBottom="12dp"
-            android:autofillHints=""
-            android:background="@drawable/bg_input"
-            android:hint="@string/hint_morada"
-            android:inputType="textPostalAddress"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#4A4A4A" />
-
-        <EditText
-            android:id="@+id/etRegEmail"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginBottom="12dp"
-            android:autofillHints=""
-            android:background="@drawable/bg_input"
-            android:hint="@string/hint_email"
-            android:inputType="textEmailAddress"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#4A4A4A" />
-
-        <EditText
-            android:id="@+id/etRegPassword"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginBottom="32dp"
-            android:background="@drawable/bg_input"
-            android:hint="@string/hint_password"
-            android:inputType="textPassword"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#4A4A4A" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnRegisterSubmit"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="@drawable/bg_button"
-            android:text="@string/btn_registar"
-            android:textColor="#000000"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvGoToLogin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/ja_tem_conta"
-            android:textColor="#4A4A4A"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:padding="8dp"/>
-
-    </LinearLayout>
-</ScrollView>
+</RelativeLayout>

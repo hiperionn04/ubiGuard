@@ -1,7 +1,9 @@
 package pt.fct.unl.sim.ubiguard
 
 import android.os.Bundle
+import android.view.View
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +31,8 @@ class RegisterActivity : AppCompatActivity() {
         val btnRegisterSubmit = findViewById<AppCompatButton>(R.id.btnRegisterSubmit)
         val tvGoToLogin = findViewById<TextView>(R.id.tvGoToLogin)
 
+        val progressBar = findViewById<ProgressBar>(R.id.progressBarRegister)
+
         tvGoToLogin.setOnClickListener {
             finish()
         }
@@ -49,32 +53,55 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // NOVO: Mostrar a rodinha de loading e desativar o botão para evitar spam
+            progressBar.visibility = View.VISIBLE
+            btnRegisterSubmit.isEnabled = false
+            btnRegisterSubmit.alpha = 0.5f // Fica meio transparente para parecer desativado
+
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
 
-                        val userId = auth.currentUser?.uid
+                        val user = auth.currentUser
+                        val userId = user?.uid
 
                         if (userId != null) {
                             val userMap = hashMapOf(
                                 "name" to name,
                                 "email" to email,
                                 "address" to address,
-                                "alarms" to emptyList<String>(),
                                 "account_type" to "User"
                             )
 
                             database.child("users").child(userId).setValue(userMap)
                                 .addOnSuccessListener {
-                                    Toast.makeText(this, "Conta e Perfil criados com sucesso!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this, "Conta criada com sucesso!", Toast.LENGTH_SHORT).show()
+                                    // Aqui não precisamos de reativar o botão porque vamos fechar o ecrã a seguir
                                     finish()
                                 }
-                                .addOnFailureListener { e ->
-                                    Toast.makeText(this, "Erro a guardar perfil: ${e.message}", Toast.LENGTH_LONG).show()
+                                .addOnFailureListener {
+                                    user.delete().addOnCompleteListener {
+                                        etRegName.text.clear()
+                                        etRegEmail.text.clear()
+                                        etRegAddress.text.clear()
+                                        etRegPassword.text.clear()
+
+                                        Toast.makeText(this, "Um erro ocorreu a criar a conta. Tenta novamente.", Toast.LENGTH_LONG).show()
+
+                                        // NOVO: Esconder a rodinha e reativar o botão porque deu erro na BD
+                                        progressBar.visibility = View.GONE
+                                        btnRegisterSubmit.isEnabled = true
+                                        btnRegisterSubmit.alpha = 1.0f
+                                    }
                                 }
                         }
                     } else {
                         Toast.makeText(this, "Erro: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+
+                        // NOVO: Esconder a rodinha e reativar o botão porque deu erro na Auth
+                        progressBar.visibility = View.GONE
+                        btnRegisterSubmit.isEnabled = true
+                        btnRegisterSubmit.alpha = 1.0f
                     }
                 }
         }

@@ -4,5 +4,6 @@ data class Alarm(
     val id: String = "",
     val name: String = "",
     val location: String = "",
-    val status: String = "Desarmado"
+    val status: String = "Desarmado",
+    val activated: Boolean = false
 )
