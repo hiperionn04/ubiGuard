@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MUDANÇA: A raiz agora é um DrawerLayout para suportar o slider -->
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerLayout"
@@ -7,13 +6,11 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- 1. CONTEÚDO PRINCIPAL -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Barra Superior (Igual à do Dashboard, com o botão do Menu!) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,7 +22,7 @@
                 android:id="@+id/ivMenuIcon"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:contentDescription="@string/menu_perfil"
+                android:contentDescription="@string/desc_menu_icon"
                 android:src="@drawable/ic_profile"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
@@ -35,7 +32,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/menu_perfil"
+                android:text="@string/title_profile"
                 android:textColor="#00D0FF"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -44,7 +41,6 @@
                 android:layout_marginEnd="32dp"/>
         </LinearLayout>
 
-        <!-- O conteúdo do Perfil -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -57,13 +53,13 @@
                 android:gravity="center"
                 android:orientation="vertical"
                 android:padding="32dp"
-                android:visibility="gone"> <!-- Começa invisível até carregar os dados -->
+                android:visibility="gone">
 
                 <ImageView
                     android:layout_width="120dp"
                     android:layout_height="120dp"
                     android:layout_marginBottom="16dp"
-                    android:contentDescription="@string/menu_perfil"
+                    android:contentDescription="@string/title_profile"
                     android:src="@drawable/ic_profile"
                     app:tint="#00D0FF" />
 
@@ -72,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="@string/nome"
+                    android:text="@string/label_name"
                     android:textColor="#FFFFFF"
                     android:textSize="28sp"
                     android:textStyle="bold" />
@@ -82,7 +78,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
-                    android:text="@string/email_exemplo"
+                    android:text="@string/placeholder_email"
                     android:textColor="#7A8B99"
                     android:textSize="16sp" />
 
@@ -99,7 +95,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/tipo_de_conta"
+                        android:text="@string/label_account_type"
                         android:textColor="#4A4A4A"
                         android:textSize="16sp" />
 
@@ -107,7 +103,7 @@
                         android:id="@+id/tvProfileType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/user"
+                        android:text="@string/placeholder_user"
                         android:textColor="#00D0FF"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -125,7 +121,6 @@
         </RelativeLayout>
     </LinearLayout>
 
-    <!-- 2. GAVETA LATERAL (Sempre no fim!) -->
     <include layout="@layout/component_slider" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -12,6 +12,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@android:drawable/ic_menu_info_details"
+        android:contentDescription="@string/desc_menu_icon"
         app:tint="#7A8B99"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_marginEnd="12dp"/>
@@ -20,7 +21,7 @@
         android:id="@+id/tvLogMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="None"
+        android:text="@string/placeholder_none"
         android:textColor="#00D0FF"
         android:textSize="14sp"
         android:fontFamily="monospace" />

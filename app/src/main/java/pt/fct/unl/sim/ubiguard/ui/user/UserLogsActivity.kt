@@ -1,5 +1,6 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.ui.user
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -9,22 +10,25 @@ import android.widget.Toast
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import pt.fct.unl.sim.ubiguard.R
+import pt.fct.unl.sim.ubiguard.adapters.LogAdapter
+import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
 
 class UserLogsActivity : BaseActivity() {
 
     private val logList = mutableListOf<String>()
     private lateinit var logAdapter: LogAdapter
     private lateinit var database: DatabaseReference
-
     private var alarmId: String? = null
-
-    // VARIÁVEIS DO INFINITE SCROLLING
     private var isLoading = false
     private var isLastPage = false
     private var oldestKey: String? = null
     private val PAGE_SIZE = 50
-
     private lateinit var progressBar: ProgressBar
     private lateinit var tvEmptyState: TextView
     private lateinit var rvLogs: RecyclerView
@@ -35,7 +39,7 @@ class UserLogsActivity : BaseActivity() {
 
         alarmId = intent.getStringExtra("ALARM_ID")
         if (alarmId == null) {
-            Toast.makeText(this, "Erro: Alarme não encontrado.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_alarm_notfound), Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -55,15 +59,13 @@ class UserLogsActivity : BaseActivity() {
 
         database = FirebaseDatabase.getInstance().reference
 
-        // Inicia logo o carregamento da 1ª página!
         carregarLogs(isInitialLoad = true)
 
-        // DETETOR DE SCROLL PARA CARREGAR MAIS
         rvLogs.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                if (dy > 0) { // Se estiver a fazer scroll para baixo
+                if (dy > 0) {
                     val visibleItemCount = layoutManager.childCount
                     val totalItemCount = layoutManager.itemCount
                     val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
@@ -78,6 +80,7 @@ class UserLogsActivity : BaseActivity() {
         })
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun carregarLogs(isInitialLoad: Boolean) {
         if (isLoading) return
         isLoading = true
@@ -116,8 +119,7 @@ class UserLogsActivity : BaseActivity() {
                 oldestKey = snapshotsList.first().key
 
                 if (!isInitialLoad && snapshotsList.isNotEmpty()) {
-                    // Prevenir duplicação do elemento que serve de pivô (oldestKey anterior)
-                    if (snapshotsList.last().key == logList.last().hashCode().toString() /* Abordagem aproximada */) {
+                    if (snapshotsList.last().key == logList.last().hashCode().toString()) {
                         snapshotsList = snapshotsList.dropLast(1)
                     }
                 }
@@ -157,7 +159,7 @@ class UserLogsActivity : BaseActivity() {
             override fun onCancelled(error: DatabaseError) {
                 isLoading = false
                 progressBar.visibility = View.GONE
-                Toast.makeText(this@UserLogsActivity, "Erro ao carregar histórico.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@UserLogsActivity, getString(R.string.error_loading_history), Toast.LENGTH_SHORT).show()
             }
         })
     }

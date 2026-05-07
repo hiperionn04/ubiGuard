@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
@@ -16,7 +15,7 @@
         android:id="@+id/tvAlarmName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Alarme"
+        android:text="@string/placeholder_alarm_name"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -25,7 +24,7 @@
         android:id="@+id/tvAlarmLocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="A carregar localização..."
+        android:text="@string/placeholder_loading_location"
         android:textColor="#7A8B99"
         android:textSize="12sp"
         android:layout_marginTop="4dp" />
@@ -34,7 +33,7 @@
         android:id="@+id/tvAlarmStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Estado"
+        android:text="@string/placeholder_status"
         android:textColor="#00D0FF"
         android:textSize="12sp"
         android:textStyle="bold"

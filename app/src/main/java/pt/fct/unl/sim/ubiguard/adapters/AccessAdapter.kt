@@ -1,4 +1,4 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import pt.fct.unl.sim.ubiguard.R
+import pt.fct.unl.sim.ubiguard.models.AccessItem
 
 class AccessAdapter(
     private val accessList: List<AccessItem>,
@@ -28,10 +30,12 @@ class AccessAdapter(
 
         holder.tvAccessEmail.text = item.email
 
+        val context = holder.itemView.context
+
         if (item.isChild) {
-            holder.tvAccessDetails.text = "Conta: Criança (Sem limite)"
+            holder.tvAccessDetails.text = context.getString(R.string.accesss_child)
         } else {
-            holder.tvAccessDetails.text = "Convidado até: ${item.expiry}"
+            holder.tvAccessDetails.text = context.getString(R.string.access_guest, item.expiry)
         }
 
         holder.btnRemoveAccess.setOnClickListener {

@@ -1,5 +1,6 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.ui.alarm
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -8,13 +9,30 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RadioGroup
+import android.widget.TextView
+import android.widget.Toast
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
-import java.util.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import pt.fct.unl.sim.ubiguard.R
+import pt.fct.unl.sim.ubiguard.ui.user.UserLogsActivity
+import pt.fct.unl.sim.ubiguard.adapters.AccessAdapter
+import pt.fct.unl.sim.ubiguard.models.AccessItem
+import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
+import java.util.Calendar
+import androidx.core.graphics.toColorInt
+import androidx.core.graphics.drawable.toDrawable
 
 class UserAlarmDetailsActivity : BaseActivity() {
 
@@ -22,8 +40,6 @@ class UserAlarmDetailsActivity : BaseActivity() {
     private lateinit var auth: FirebaseAuth
     private var alarmId: String? = null
     private var currentStatus: String = "Desarmado"
-
-    // VARIÁVEIS DA LISTA DE ACESSOS
     private lateinit var rvAccessList: RecyclerView
     private val accessList = mutableListOf<AccessItem>()
     private lateinit var accessAdapter: AccessAdapter
@@ -38,7 +54,7 @@ class UserAlarmDetailsActivity : BaseActivity() {
         alarmId = intent.getStringExtra("ALARM_ID")
 
         if (alarmId == null) {
-            Toast.makeText(this, "Erro: Alarme não especificado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_alarm_not_specified), Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -47,13 +63,11 @@ class UserAlarmDetailsActivity : BaseActivity() {
         val ivMenuIcon = findViewById<ImageView>(R.id.ivMenuIcon)
         ativarSliderComponent(drawerLayout, ivMenuIcon)
 
-        // Configurar a Lista de Acessos
         rvAccessList = findViewById(R.id.rvAccessList)
         rvAccessList.layoutManager = LinearLayoutManager(this)
 
-        // Se clicar no lixo, chama a função para remover acesso
-        accessAdapter = AccessAdapter(accessList) { acessoClicado ->
-            removerAcesso(acessoClicado)
+        accessAdapter = AccessAdapter(accessList) { clickAccess ->
+            removeAccess(clickAccess)
         }
         rvAccessList.adapter = accessAdapter
 
@@ -72,13 +86,14 @@ class UserAlarmDetailsActivity : BaseActivity() {
     private fun loadAlarmDetails() {
         val currentUserUid = auth.currentUser?.uid ?: return
 
-        database.child("alarms").child(alarmId!!).addValueEventListener(object : ValueEventListener {
+        database.child("alarms").child(alarmId!!).addValueEventListener(object :
+            ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!snapshot.exists()) return
 
-                val name = snapshot.child("name").getValue(String::class.java) ?: "Desconhecido"
-                val address = snapshot.child("location").getValue(String::class.java) ?: "Sem Morada"
-                val status = snapshot.child("status").getValue(String::class.java) ?: "Desarmado"
+                val name = snapshot.child("name").getValue(String::class.java) ?: getString(R.string.general_unknown)
+                val address = snapshot.child("location").getValue(String::class.java) ?: getString(R.string.general_unknown_location)
+                val status = snapshot.child("status").getValue(String::class.java) ?: getString(R.string.general_unknown_status)
                 val ownerId = snapshot.child("ownerId").getValue(String::class.java)
 
                 currentStatus = status
@@ -89,17 +104,16 @@ class UserAlarmDetailsActivity : BaseActivity() {
                 tvStatus.text = status.uppercase()
 
                 if (status == "Armado") {
-                    tvStatus.setTextColor(Color.parseColor("#00D0FF"))
-                    findViewById<Button>(R.id.btnToggleAlarm).text = "DESARMAR ALARME"
+                    tvStatus.setTextColor("#00D0FF".toColorInt())
+                    findViewById<Button>(R.id.btnToggleAlarm).text = getString(R.string.alarm_disarm)
                 } else {
-                    tvStatus.setTextColor(Color.parseColor("#FF3B30"))
-                    findViewById<Button>(R.id.btnToggleAlarm).text = "ARMAR ALARME"
+                    tvStatus.setTextColor("#FF3B30".toColorInt())
+                    findViewById<Button>(R.id.btnToggleAlarm).text = getString(R.string.alarm_arm)
                 }
 
-                // CONTROLO: Só o dono vê a parte dos Logs e Acessos!
                 if (ownerId == currentUserUid) {
                     findViewById<View>(R.id.layoutOwnerOnly).visibility = View.VISIBLE
-                    carregarListaDeAcessos()
+                    loadAccessList()
                 } else {
                     findViewById<View>(R.id.layoutOwnerOnly).visibility = View.GONE
                 }
@@ -108,23 +122,22 @@ class UserAlarmDetailsActivity : BaseActivity() {
         })
     }
 
-    private fun carregarListaDeAcessos() {
+    private fun loadAccessList() {
 
         if(accessListener != null) return
 
         accessListener = database.child("alarms").child(alarmId!!).child("access_list")
             .addValueEventListener(object : ValueEventListener {
+
+                @SuppressLint("NotifyDataSetChanged")
                 override fun onDataChange(snapshot: DataSnapshot) {
                     accessList.clear()
                     for (child in snapshot.children) {
                         val expiry = child.child("expiry").getValue(String::class.java)
 
                         if (isExpired(expiry)) {
-                            // Se o dono abrir a página e vir alguém expirado, a app limpa a DB
                             val targetUid = child.key!!
-                            // Limpa no alarme
                             child.ref.removeValue()
-                            // Limpa no utilizador (para garantir)
                             database.child("users").child(targetUid).child("alarms").child(alarmId!!).removeValue()
                         } else {
                             val targetUid = child.key ?: continue
@@ -139,38 +152,31 @@ class UserAlarmDetailsActivity : BaseActivity() {
             })
     }
 
-    private fun removerAcesso(acesso: AccessItem) {
-        // 1. Carregar o nosso design escuro
+    private fun removeAccess(access: AccessItem) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_confirm, null)
         val tvMessage = dialogView.findViewById<TextView>(R.id.tvConfirmMessage)
 
-        // Colocar a mensagem com o email certo
-        tvMessage.text = "Tens a certeza que queres remover o acesso de ${acesso.email}?"
+        tvMessage.text = getString(R.string.alarm_remove_access_confirm, access.email)
 
-        // 2. Criar o alerta sem usar os botões nativos do Android
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .create()
 
-        // 3. Tornar o fundo branco nativo do Android invisível!
-        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        dialog.window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
 
-        // 4. Lógica do botão CANCELAR
         dialogView.findViewById<TextView>(R.id.btnCancelConfirm).setOnClickListener {
             dialog.dismiss()
         }
 
-        // 5. Lógica do botão REMOVER (A Vermelho!)
         dialogView.findViewById<TextView>(R.id.btnConfirmAction).setOnClickListener {
-            val targetUid = acesso.uid
+            val targetUid = access.uid
             val aid = alarmId!!
 
-            // Apaga da base de dados
             database.child("users").child(targetUid).child("alarms").child(aid).removeValue()
             database.child("alarms").child(aid).child("access_list").child(targetUid).removeValue()
-                .addOnSuccessListener { Toast.makeText(this, "Acesso removido com sucesso", Toast.LENGTH_SHORT).show() }
+                .addOnSuccessListener { Toast.makeText(this, getString(R.string.general_access_removed), Toast.LENGTH_SHORT).show() }
 
-            dialog.dismiss() // Fecha o popup
+            dialog.dismiss()
         }
 
         dialog.show()
@@ -181,6 +187,7 @@ class UserAlarmDetailsActivity : BaseActivity() {
         database.child("alarms").child(alarmId!!).child("status").setValue(newStatus)
     }
 
+    @SuppressLint("DefaultLocale", "UseKtx")
     private fun showAddGuestDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_guest, null)
         val etEmail = dialogView.findViewById<EditText>(R.id.etGuestEmail)
@@ -194,14 +201,18 @@ class UserAlarmDetailsActivity : BaseActivity() {
             layoutExpiry.visibility = if (checkedId == R.id.rbGuest) View.VISIBLE else View.GONE
         }
 
-        // ==========================================
-        // O SEGREDO DO CALENDÁRIO AZUL: R.style.CustomPickerTheme
-        // ==========================================
         btnPickDateTime.setOnClickListener {
             val cal = Calendar.getInstance()
             DatePickerDialog(this, R.style.CustomPickerTheme, { _, year, month, dayOfMonth ->
                 TimePickerDialog(this, R.style.CustomPickerTheme, { _, hourOfDay, minute ->
-                    selectedExpiryDate = String.format("%02d/%02d/%04d %02d:%02d", dayOfMonth, month + 1, year, hourOfDay, minute)
+                    selectedExpiryDate = String.format(
+                        "%02d/%02d/%04d %02d:%02d",
+                        dayOfMonth,
+                        month + 1,
+                        year,
+                        hourOfDay,
+                        minute
+                    )
                     btnPickDateTime.text = selectedExpiryDate
                 }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
@@ -211,7 +222,7 @@ class UserAlarmDetailsActivity : BaseActivity() {
             .setView(dialogView)
             .create()
 
-        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        dialog.window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
 
         dialogView.findViewById<TextView>(R.id.btnCancelAdd).setOnClickListener {
             dialog.dismiss()
@@ -222,27 +233,30 @@ class UserAlarmDetailsActivity : BaseActivity() {
             val isChild = rgAccessType.checkedRadioButtonId == R.id.rbChild
 
             if (emailTarget.isEmpty()) {
-                Toast.makeText(this, "Email obrigatório.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.general_force_email), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (!isChild && selectedExpiryDate == null) {
-                Toast.makeText(this, "Tens de escolher uma data limite para o Convidado.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.general_force_pickdate), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            associarUtilizador(emailTarget, isChild, selectedExpiryDate)
+            associateUser(emailTarget, isChild, selectedExpiryDate)
             dialog.dismiss()
         }
         dialog.show()
     }
 
-    private fun associarUtilizador(emailTarget: String, isChild: Boolean, expiryDate: String?) {
-        database.child("users").orderByChild("email").equalTo(emailTarget).addListenerForSingleValueEvent(object : ValueEventListener {
+    /**
+     * Associate User to the Alarm
+     */
+    private fun associateUser(emailTarget: String, isChild: Boolean, expiryDate: String?) {
+        database.child("users").orderByChild("email").equalTo(emailTarget).addListenerForSingleValueEvent(object :
+            ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     val targetUid = snapshot.children.first().key!!
 
-                    // AGORA GUARDAMOS O EMAIL AQUI PARA SER FÁCIL DE LER NA LISTA!
                     val accessData = mapOf(
                         "email" to emailTarget,
                         "isChild" to isChild,
@@ -251,9 +265,9 @@ class UserAlarmDetailsActivity : BaseActivity() {
 
                     database.child("users").child(targetUid).child("alarms").child(alarmId!!).setValue(accessData)
                     database.child("alarms").child(alarmId!!).child("access_list").child(targetUid).setValue(accessData)
-                        .addOnSuccessListener { Toast.makeText(this@UserAlarmDetailsActivity, "Acesso concedido com sucesso!", Toast.LENGTH_SHORT).show() }
+                        .addOnSuccessListener { Toast.makeText(this@UserAlarmDetailsActivity, getString(R.string.general_access_granted), Toast.LENGTH_SHORT).show() }
                 } else {
-                    Toast.makeText(this@UserAlarmDetailsActivity, "Não existe nenhuma conta com este email.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@UserAlarmDetailsActivity, getString(R.string.error_email), Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onCancelled(error: DatabaseError) {}

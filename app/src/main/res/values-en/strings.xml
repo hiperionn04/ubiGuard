@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UbiGuard</string>
+
+    <!-- Access Adapter -->
+    <string name="accesss_child">Account: Child (No limit)</string>
+    <string name="access_guest">Guest until: %s</string>
+
+    <!-- Sensor Adapter -->
+    <string name="last_read">Last Read: %s</string>
+
+    <!-- General -->
+    <string name="general_armed">ARMED</string>
+    <string name="general_disarmed">DISARMED</string>
+    <string name="general_active">Active</string>
+    <string name="general_inactive">Inactive</string>
+    <string name="general_no_owner">No Owner</string>
+    <string name="general_unknown">Unknown</string>
+    <string name="general_unknown_location">Unknown Location</string>
+    <string name="general_unknown_status">Unknown Status</string>
+    <string name="general_insert_id">Insert an id</string>
+    <string name="general_no_log">No log found</string>
+    <string name="general_no_data">No data</string>
+    <string name="general_access_removed">Access removed successfully</string>
+    <string name="general_force_email">Email is required</string>
+    <string name="general_force_pickdate">You have to choose a time limit to the guest.</string>
+    <string name="general_access_granted">Access granted</string>
+    <string name="general_fields">Fill all fields</string>
+    <string name="general_cancel">Cancel</string>
+    <string name="general_associate_alarme">Associate Alarm</string>
+    <string name="general_associate">Associate</string>
+    <string name="general_user_notfound">User not found.</string>
+
+
+    <!-- Auth -->
+    <string name="auth_fill_email_pass">Fill the email and password</string>
+    <string name="auth_welcome">Welcome!</string>
+    <string name="auth_wrong_data">Wrong data</string>
+    <string name="auth_fields">Fill all fields</string>
+    <string name="auth_min_characters">The password should be at least 6 characters long</string>
+    <string name="auth_account_created_success">Account created with success</string>
+    <string name="auth_error_creating_account">Error while creating account. Try again!</string>
+
+    <!-- Errors -->
+    <string name="error_general">Error: %s</string>
+    <string name="error_loading_alarm">Error loading alarm</string>
+    <string name="error_loading_logs">Erro loading logs</string>
+    <string name="error_loading_sensors">Error loading sensors</string>
+    <string name="error_alarm_not_specified">Error: Alarm not specified</string>
+    <string name="error_email">There is account with that email</string>
+    <string name="error_loading_profile">Error loading profile</string>
+    <string name="error_loading_permissions">Error loading permissions</string>
+    <string name="error_session">Session error</string>
+    <string name="error_no_email">No email</string>
+    <string name="error_profile_notfound">Profile not found</string>
+    <string name="error_alarm_notfound">Error: Alarm not found</string>
+    <string name="error_loading_history">Error loading history</string>
+
+    <!-- Placeholder -->
+    <string name="placeholder_alarm_id">Alarm ID</string>
+    <string name="placeholder_name">Name (ex: Vacation House)</string>
+    <string name="placeholder_location">Location</string>
+        <string name="placeholder_client_email">Client email</string>
+
+
+    <!-- Alarm -->
+    <string name="alarm_no_sensors">No sensors found for this alarm.</string>
+    <string name="alarm_disarm">ARM ALARM</string>
+    <string name="alarm_arm">DISARM ALARM</string>
+    <string name="alarm_remove_access_confirm">Are you sure that you want to remove access to %s ?</string>
+    <string name="alarm_configurate_activate">Config and Activate Alarm</string>
+    <string name="alarm_activate">Activate</string>
+    <string name="alarm_activate_success">Alarm activated with success</string>
+    <string name="alarm_activate_error">Error while activating alarm</string>
+    <string name="alarm_created_associated">Alarm created and Owner defined!</string>
+
+
+    <!-- Layout -->
+    <string name="btn_cancel">CANCEL</string>
+    <string name="btn_add">ADD</string>
+    <string name="btn_remove">REMOVE</string>
+    <string name="btn_search">Search</string>
+    <string name="placeholder_email">email@example.com</string>
+    <string name="placeholder_loading">Loading...</string>
+    <string name="desc_menu_icon">Menu</string>
+    <string name="status_armed">ARMED</string>
+    <string name="status_disarmed">DISARMED</string>
+
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_login">Login</string>
+    <string name="msg_no_account">Don\'t have an account? Register here.</string>
+
+    <string name="title_register">New User</string>
+    <string name="hint_full_name">Full Name</string>
+    <string name="hint_main_address">Main Address</string>
+    <string name="btn_register_account">Create Account</string>
+    <string name="msg_already_have_account">Already have an account? Login here.</string>
+
+    <string name="title_all_alarms">All Alarms</string>
+    <string name="hint_search_name_address">Search name or address...</string>
+    <string name="filter_all">All</string>
+    <string name="empty_state_no_alarms">No alarms configured.</string>
+
+    <string name="title_profile">Profile</string>
+    <string name="label_name">Name</string>
+    <string name="label_account_type">Account Type: </string>
+    <string name="placeholder_user">User</string>
+
+    <string name="title_alarm_details">Alarm Details</string>
+    <string name="label_owner">OWNER</string>
+    <string name="placeholder_loading_name">Loading name...</string>
+    <string name="placeholder_address">123 Example Street</string>
+    <string name="label_diagnostic_actions">DIAGNOSTIC ACTIONS</string>
+    <string name="btn_view_sensors_realtime">VIEW SENSORS IN REAL TIME</string>
+    <string name="btn_view_logs_history">VIEW LOGS HISTORY</string>
+
+    <string name="placeholder_dots">...</string>
+    <string name="btn_arm_alarm">ARM ALARM</string>
+    <string name="btn_view_alarm_logs">VIEW ALARM LOGS</string>
+    <string name="label_access_management">ACCESS MANAGEMENT</string>
+    <string name="btn_add_guest">+ ADD</string>
+
+    <string name="title_alarm_logs">Alarm Logs</string>
+    <string name="title_alarm_history">Alarm History</string>
+    <string name="hint_alarm_id">Alarm ID...</string>
+    <string name="empty_state_no_events">There are no registered events yet.</string>
+
+    <string name="title_sensors_status">Sensors Status</string>
+    <string name="empty_state_search_sensors">Insert an ID to search for sensors.</string>
+
+    <string name="menu_dashboard">Dashboard</string>
+    <string name="menu_profile">My Profile</string>
+    <string name="menu_alarms">Alarms</string>
+    <string name="menu_sensors">Sensors</string>
+    <string name="menu_system_logs">System Logs</string>
+    <string name="menu_logout">Logout</string>
+
+    <string name="title_add_user">Add User</string>
+    <string name="hint_guest_email">Email of the account to add...</string>
+    <string name="radio_child">Child</string>
+    <string name="radio_guest">Guest</string>
+    <string name="label_valid_until">Access valid until:</string>
+    <string name="btn_pick_datetime">CHOOSE DATE AND TIME</string>
+
+    <string name="title_remove_access">Remove Access</string>
+    <string name="msg_are_you_sure">Are you sure?</string>
+
+    <string name="placeholder_child_access">Child</string>
+    <string name="placeholder_alarm_name">Alarm</string>
+    <string name="placeholder_loading_location">Loading location...</string>
+    <string name="placeholder_status">Status</string>
+    <string name="placeholder_none">None</string>
+    <string name="placeholder_sensor_name">Sensor Name</string>
+    <string name="placeholder_active">Active</string>
+    <string name="label_last_read">Last read:</string>
+
+    <string name="title_dashboard">Dashboard</string>
+    <string name="btn_activate_alarm">Activate Alarm</string>
+    <string name="btn_associate_alarm">Associate Alarm</string>
+
+</resources>

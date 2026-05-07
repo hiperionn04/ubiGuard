@@ -19,7 +19,7 @@
             android:id="@+id/tvAccessEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="email@exemplo.com"
+            android:text="@string/placeholder_email"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold"/>
@@ -28,7 +28,7 @@
             android:id="@+id/tvAccessDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Criança"
+            android:text="@string/placeholder_child_access"
             android:textColor="#00D0FF"
             android:textSize="14sp"/>
     </LinearLayout>
@@ -38,6 +38,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="@string/btn_remove"
         app:tint="#FF3B30"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"

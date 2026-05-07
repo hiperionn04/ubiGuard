@@ -1,4 +1,4 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.models
 
 data class Alarm(
     val id: String = "",

@@ -1,5 +1,6 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.ui.alarm
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -14,7 +15,15 @@ import android.widget.Toast
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import pt.fct.unl.sim.ubiguard.R
+import pt.fct.unl.sim.ubiguard.adapters.AlarmAdapter
+import pt.fct.unl.sim.ubiguard.models.Alarm
+import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
 
 class InstallerAlarmsActivity : BaseActivity() {
 
@@ -50,9 +59,9 @@ class InstallerAlarmsActivity : BaseActivity() {
 
         rvAllAlarms.layoutManager = LinearLayoutManager(this)
 
-        alarmAdapter = AlarmAdapter(displayedAlarmList) { alarmeClicado ->
+        alarmAdapter = AlarmAdapter(displayedAlarmList) { alarmClicked ->
             val intent = Intent(this, AlarmDetailsActivity::class.java)
-            intent.putExtra("ALARM_ID", alarmeClicado.id)
+            intent.putExtra("ALARM_ID", alarmClicked.id)
             startActivity(intent)
         }
         rvAllAlarms.adapter = alarmAdapter
@@ -62,15 +71,16 @@ class InstallerAlarmsActivity : BaseActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                aplicarFiltros()
+                applyFilters()
             }
         })
 
         rgStatusFilter.setOnCheckedChangeListener { _, _ ->
-            aplicarFiltros()
+            applyFilters()
         }
 
-        alarmsListener = database.child("alarms").addValueEventListener(object : ValueEventListener {
+        alarmsListener = database.child("alarms").addValueEventListener(object :
+            ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 progressBar.visibility = View.GONE
                 fullAlarmList.clear()
@@ -83,41 +93,42 @@ class InstallerAlarmsActivity : BaseActivity() {
                     }
                 }
 
-                aplicarFiltros()
+                applyFilters()
             }
 
             override fun onCancelled(error: DatabaseError) {
                 progressBar.visibility = View.GONE
-                Toast.makeText(this@InstallerAlarmsActivity, "Erro a carregar alarmes.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@InstallerAlarmsActivity, getString(R.string.error_loading_alarm), Toast.LENGTH_SHORT).show()
             }
         })
     }
 
-    // ==========================================
-    // A MAGIA DOS FILTROS (Filtro Local)
-    // ==========================================
-    private fun aplicarFiltros() {
-        val textoPesquisa = etSearch.text.toString().trim().lowercase()
-        val filtroArmado = rgStatusFilter.checkedRadioButtonId == R.id.rbArmado
-        val filtroDesarmado = rgStatusFilter.checkedRadioButtonId == R.id.rbDesarmado
+    /**
+     * Apply filters on searching
+     */
+    @SuppressLint("NotifyDataSetChanged")
+    private fun applyFilters() {
+        val searchText = etSearch.text.toString().trim().lowercase()
+        val armedFilter = rgStatusFilter.checkedRadioButtonId == R.id.rbArmado
+        val disarmedFilter = rgStatusFilter.checkedRadioButtonId == R.id.rbDesarmado
 
         displayedAlarmList.clear()
 
         for (alarm in fullAlarmList) {
 
-            val nomeAlarme = alarm.name ?: ""
-            val moradaAlarme = alarm.location ?: ""
+            val alarmName = alarm.name
+            val alarmLocation = alarm.location
 
-            val passaFiltroTexto = nomeAlarme.lowercase().contains(textoPesquisa) ||
-                    moradaAlarme.lowercase().contains(textoPesquisa)
+            val textFilter = alarmName.lowercase().contains(searchText) ||
+                    alarmLocation.lowercase().contains(searchText)
 
-            val passaFiltroEstado = when {
-                filtroArmado -> alarm.status == "Armado"
-                filtroDesarmado -> alarm.status == "Desarmado"
+            val stateFilter = when {
+                armedFilter -> alarm.status == "Armado"
+                disarmedFilter -> alarm.status == "Desarmado"
                 else -> true
             }
 
-            if (passaFiltroTexto && passaFiltroEstado) {
+            if (textFilter && stateFilter) {
                 displayedAlarmList.add(alarm)
             }
         }

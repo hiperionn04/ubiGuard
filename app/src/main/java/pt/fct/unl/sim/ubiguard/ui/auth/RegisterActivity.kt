@@ -1,4 +1,4 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.ui.auth
 
 import android.os.Bundle
 import android.view.View
@@ -11,6 +11,7 @@ import androidx.appcompat.widget.AppCompatButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import pt.fct.unl.sim.ubiguard.R
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -44,19 +45,18 @@ class RegisterActivity : AppCompatActivity() {
             val address = etRegAddress.text.toString().trim()
 
             if (name.isEmpty() || email.isEmpty() || password.isEmpty() || address.isEmpty()) {
-                Toast.makeText(this, "Por favor, preenche todos os campos.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.auth_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             if (password.length < 6) {
-                Toast.makeText(this, "A password deve ter pelo menos 6 caracteres.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.auth_min_characters), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // NOVO: Mostrar a rodinha de loading e desativar o botão para evitar spam
             progressBar.visibility = View.VISIBLE
             btnRegisterSubmit.isEnabled = false
-            btnRegisterSubmit.alpha = 0.5f // Fica meio transparente para parecer desativado
+            btnRegisterSubmit.alpha = 0.5f
 
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this) { task ->
@@ -75,8 +75,7 @@ class RegisterActivity : AppCompatActivity() {
 
                             database.child("users").child(userId).setValue(userMap)
                                 .addOnSuccessListener {
-                                    Toast.makeText(this, "Conta criada com sucesso!", Toast.LENGTH_SHORT).show()
-                                    // Aqui não precisamos de reativar o botão porque vamos fechar o ecrã a seguir
+                                    Toast.makeText(this, getString(R.string.auth_account_created_success), Toast.LENGTH_SHORT).show()
                                     finish()
                                 }
                                 .addOnFailureListener {
@@ -86,9 +85,8 @@ class RegisterActivity : AppCompatActivity() {
                                         etRegAddress.text.clear()
                                         etRegPassword.text.clear()
 
-                                        Toast.makeText(this, "Um erro ocorreu a criar a conta. Tenta novamente.", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(this, getString(R.string.auth_error_creating_account), Toast.LENGTH_LONG).show()
 
-                                        // NOVO: Esconder a rodinha e reativar o botão porque deu erro na BD
                                         progressBar.visibility = View.GONE
                                         btnRegisterSubmit.isEnabled = true
                                         btnRegisterSubmit.alpha = 1.0f
@@ -96,9 +94,8 @@ class RegisterActivity : AppCompatActivity() {
                                 }
                         }
                     } else {
-                        Toast.makeText(this, "Erro: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, getString(R.string.error_general, task.exception?.message), Toast.LENGTH_LONG).show()
 
-                        // NOVO: Esconder a rodinha e reativar o botão porque deu erro na Auth
                         progressBar.visibility = View.GONE
                         btnRegisterSubmit.isEnabled = true
                         btnRegisterSubmit.alpha = 1.0f

@@ -21,6 +21,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/ic_profile"
+                android:contentDescription="@string/desc_menu_icon"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"/>
@@ -29,7 +30,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Detalhes do Alarme"
+                android:text="@string/title_alarm_details"
                 android:textColor="#00D0FF"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -61,7 +62,7 @@
                         android:id="@+id/tvDetStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ARMADO"
+                        android:text="@string/status_armed"
                         android:textColor="#00D0FF"
                         android:textSize="32sp"
                         android:textStyle="bold"
@@ -72,7 +73,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Rua Exemplo, 123"
+                        android:text="@string/placeholder_address"
                         android:textColor="#7A8B99"
                         android:textSize="16sp" />
                 </LinearLayout>
@@ -80,7 +81,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PROPRIETÁRIO"
+                    android:text="@string/label_owner"
                     android:textColor="#4A4A4A"
                     android:textSize="12sp"
                     android:textStyle="bold"
@@ -99,6 +100,7 @@
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:src="@drawable/ic_profile"
+                        android:contentDescription="@string/label_owner"
                         app:tint="#00D0FF" />
 
                     <LinearLayout
@@ -111,7 +113,7 @@
                             android:id="@+id/tvOwnerName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="A carregar nome..."
+                            android:text="@string/placeholder_loading_name"
                             android:textColor="#FFFFFF"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -120,7 +122,7 @@
                             android:id="@+id/tvOwnerEmail"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="email@exemplo.com"
+                            android:text="@string/placeholder_email"
                             android:textColor="#7A8B99"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -129,7 +131,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ACÇÕES DE DIAGNÓSTICO"
+                    android:text="@string/label_diagnostic_actions"
                     android:textColor="#4A4A4A"
                     android:textSize="12sp"
                     android:textStyle="bold"
@@ -140,7 +142,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="65dp"
                     android:background="@drawable/bg_button"
-                    android:text="VER SENSORES EM TEMPO REAL"
+                    android:text="@string/btn_view_sensors_realtime"
                     android:textColor="#000000"
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp"/>
@@ -150,7 +152,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="65dp"
                     android:background="@drawable/bg_button"
-                    android:text="VER HISTÓRICO DE LOGS"
+                    android:text="@string/btn_view_logs_history"
                     android:textColor="#000000"
                     android:textStyle="bold" />
 

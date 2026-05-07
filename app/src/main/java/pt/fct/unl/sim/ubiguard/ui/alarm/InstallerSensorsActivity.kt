@@ -1,5 +1,6 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.ui.alarm
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
@@ -15,6 +16,11 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import pt.fct.unl.sim.ubiguard.R
+import pt.fct.unl.sim.ubiguard.adapters.SensorAdapter
+import pt.fct.unl.sim.ubiguard.models.SensorItem
+import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
+import kotlin.collections.get
 
 class InstallerSensorsActivity : BaseActivity() {
 
@@ -45,40 +51,36 @@ class InstallerSensorsActivity : BaseActivity() {
             val alarmId = etAlarmId.text.toString().trim()
 
             if (alarmId.isEmpty()) {
-                Toast.makeText(this, "Por favor insere um ID", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.general_insert_id), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Iniciar pesquisa
             rvSensors.visibility = View.GONE
             tvEmptyState.visibility = View.GONE
             progressBar.visibility = View.VISIBLE
             sensorList.clear()
 
-            // Vai diretamente à pasta: alarms -> [ID] -> sensors
             database.child("alarms").child(alarmId).child("sensors")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
 
+                    @SuppressLint("NotifyDataSetChanged")
                     override fun onDataChange(snapshot: DataSnapshot) {
                         progressBar.visibility = View.GONE
 
                         if (!snapshot.exists()) {
-                            tvEmptyState.text = "Nenhum sensor encontrado para este Alarme."
+                            tvEmptyState.text = getString(R.string.alarm_no_sensors)
                             tvEmptyState.visibility = View.VISIBLE
                             return
                         }
 
-                        // LER OS DADOS DINÂMICOS
                         for (child in snapshot.children) {
                             val sensorName = child.key ?: continue
                             val value = child.value
 
                             if (value is Boolean) {
-                                // CASO 1: É apenas um booleano (Ex: keypad: true)
                                 sensorList.add(SensorItem(sensorName, value, null))
 
                             } else if (value is Map<*, *>) {
-                                // CASO 2: É um objeto com várias propriedades (Ex: Temperature)
                                 val isActivated = value["activated"] as? Boolean ?: false
                                 val lastRead = value["last_read"]?.toString()
 
@@ -87,7 +89,7 @@ class InstallerSensorsActivity : BaseActivity() {
                         }
 
                         if (sensorList.isEmpty()) {
-                            tvEmptyState.text = "Sem dados visíveis."
+                            tvEmptyState.text = getString(R.string.general_no_data)
                             tvEmptyState.visibility = View.VISIBLE
                         } else {
                             rvSensors.visibility = View.VISIBLE
@@ -97,7 +99,7 @@ class InstallerSensorsActivity : BaseActivity() {
 
                     override fun onCancelled(error: DatabaseError) {
                         progressBar.visibility = View.GONE
-                        Toast.makeText(this@InstallerSensorsActivity, "Erro ao procurar sensores.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@InstallerSensorsActivity, getString(R.string.error_loading_sensors), Toast.LENGTH_SHORT).show()
                     }
                 })
         }

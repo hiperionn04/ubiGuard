@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- 1. O teu formulário normal (agora embrulhado no RelativeLayout) -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,15 +15,13 @@
             android:gravity="center"
             android:orientation="vertical"
             android:padding="32dp">
-            <!-- NOTA: Mudei o gravity ali em cima para "center".
-                 Isto vai centrar o teu formulário todo verticalmente no ecrã! -->
 
             <ImageView
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="24dp"
-                android:contentDescription=""
+                android:contentDescription="@string/app_name"
                 android:scaleType="fitCenter"
                 android:src="@drawable/logo_ubiguard" />
 
@@ -32,7 +29,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="@string/titulo_registo"
+                android:text="@string/title_register"
                 android:textColor="#00D0FF"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -46,7 +43,7 @@
                 android:layout_marginBottom="12dp"
                 android:autofillHints=""
                 android:background="@drawable/bg_input"
-                android:hint="@string/hint_nome"
+                android:hint="@string/hint_full_name"
                 android:inputType="textPersonName"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
@@ -60,7 +57,7 @@
                 android:layout_marginBottom="12dp"
                 android:autofillHints=""
                 android:background="@drawable/bg_input"
-                android:hint="@string/hint_morada"
+                android:hint="@string/hint_main_address"
                 android:inputType="textPostalAddress"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
@@ -86,6 +83,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="55dp"
                 android:layout_marginBottom="32dp"
+                android:autofillHints=""
                 android:background="@drawable/bg_input"
                 android:hint="@string/hint_password"
                 android:inputType="textPassword"
@@ -99,7 +97,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:background="@drawable/bg_button"
-                android:text="@string/btn_registar"
+                android:text="@string/btn_register_account"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -109,7 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="@string/ja_tem_conta"
+                android:text="@string/msg_already_have_account"
                 android:textColor="#4A4A4A"
                 android:textSize="14sp"
                 android:textStyle="bold"

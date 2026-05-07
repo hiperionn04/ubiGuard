@@ -1,5 +1,6 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.ui.dashboard
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -15,7 +16,17 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import pt.fct.unl.sim.ubiguard.R
+import pt.fct.unl.sim.ubiguard.ui.alarm.UserAlarmDetailsActivity
+import pt.fct.unl.sim.ubiguard.adapters.AlarmAdapter
+import pt.fct.unl.sim.ubiguard.models.Alarm
+import pt.fct.unl.sim.ubiguard.ui.auth.LoginActivity
+import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
 
 class MainActivity : BaseActivity() {
 
@@ -24,7 +35,6 @@ class MainActivity : BaseActivity() {
 
     private val alarmList = mutableListOf<Alarm>()
     private lateinit var alarmAdapter: AlarmAdapter
-
     private var globalAlarmsListener: ValueEventListener? = null
     private var userAlarmsRef: DatabaseReference? = null
     private var globalAlarmsRef: DatabaseReference? = null
@@ -53,7 +63,7 @@ class MainActivity : BaseActivity() {
             val accountType = snapshot.getValue(String::class.java) ?: "User"
             setupDashboard(accountType, userId)
         }.addOnFailureListener {
-            Toast.makeText(this, "Erro ao carregar perfil.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_loading_profile), Toast.LENGTH_SHORT).show()
             setupDashboard("User", userId)
         }
     }
@@ -66,11 +76,12 @@ class MainActivity : BaseActivity() {
             layoutUserDashboard.visibility = View.GONE
             layoutInstallerDashboard.visibility = View.VISIBLE
 
-            val btnActivar = findViewById<AppCompatButton>(R.id.btnActivarAlarme)
-            val btnAssociar = findViewById<AppCompatButton>(R.id.btnAssociarAlarme)
+            val btnActivator = findViewById<AppCompatButton>(R.id.btnActivatorAlarm)
+            val btnAssociate = findViewById<AppCompatButton>(R.id.btnAssociateAlarm)
 
-            btnActivar.setOnClickListener { showActivarAlarmeDialog() }
-            btnAssociar.setOnClickListener { showAssociarAlarmeDialog() }
+
+            btnActivator.setOnClickListener { showActivatorAlarmDialog() }
+            btnAssociate.setOnClickListener { showAssociateAlarmDialog() }
 
         } else {
             layoutUserDashboard.visibility = View.VISIBLE
@@ -81,9 +92,6 @@ class MainActivity : BaseActivity() {
 
             rvAlarms.layoutManager = LinearLayoutManager(this)
 
-            // ==========================================
-            // MUDANÇA 1: CLIQUE PARA A NOVA PÁGINA DO USER
-            // ==========================================
             alarmAdapter = AlarmAdapter(alarmList) { alarmeClicado ->
                 val intent = Intent(this, UserAlarmDetailsActivity::class.java)
                 intent.putExtra("ALARM_ID", alarmeClicado.id)
@@ -95,23 +103,20 @@ class MainActivity : BaseActivity() {
             globalAlarmsRef = database.child("alarms")
 
             userAlarmsRef?.addValueEventListener(object : ValueEventListener {
+                @SuppressLint("NotifyDataSetChanged")
                 override fun onDataChange(userSnapshot: DataSnapshot) {
                     val myAlarmIds = mutableSetOf<String>()
 
                     for (child in userSnapshot.children) {
                         val alarmId = child.key ?: continue
 
-                        // Lemos a data de validade que guardámos (se existir)
                         val expiry = child.child("expiry").getValue(String::class.java)
 
                         if (isExpired(expiry)) {
-                            // 1. LIMPEZA: O tempo passou! Apagamos da conta deste utilizador
                             child.ref.removeValue()
 
-                            // 2. Apagamos também da lista do Alarme para o Dono não ter lixo
                             database.child("alarms").child(alarmId).child("access_list").child(userId).removeValue()
                         } else {
-                            // VÁLIDO: O tempo ainda não passou (ou é Criança/Dono e não tem limite)
                             myAlarmIds.add(alarmId)
                         }
                     }
@@ -129,7 +134,8 @@ class MainActivity : BaseActivity() {
 
                     globalAlarmsListener?.let { globalAlarmsRef?.removeEventListener(it) }
 
-                    globalAlarmsListener = globalAlarmsRef?.addValueEventListener(object : ValueEventListener {
+                    globalAlarmsListener = globalAlarmsRef?.addValueEventListener(object :
+                        ValueEventListener {
                         override fun onDataChange(alarmsSnapshot: DataSnapshot) {
                             alarmList.clear()
                             for (alarmData in alarmsSnapshot.children) {
@@ -148,34 +154,34 @@ class MainActivity : BaseActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@MainActivity, "Erro a carregar permissões.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, getString(R.string.error_loading_permissions), Toast.LENGTH_SHORT).show()
                 }
             })
         }
     }
 
-    private fun showActivarAlarmeDialog() {
+    private fun showActivatorAlarmDialog() {
         val layout = LinearLayout(this)
         layout.orientation = LinearLayout.VERTICAL
         layout.setPadding(50, 40, 50, 10)
 
         val inputId = EditText(this)
-        inputId.hint = "ID do Alarme (Criado pelo ESP32)"
+        inputId.hint = getString(R.string.placeholder_alarm_id)
 
         val inputName = EditText(this)
-        inputName.hint = "Nome (ex: Casa de Férias)"
+        inputName.hint = getString(R.string.placeholder_name)
 
         val inputLocation = EditText(this)
-        inputLocation.hint = "Morada (ex: Rua Direita, 123)"
+        inputLocation.hint = getString(R.string.placeholder_location)
 
         layout.addView(inputId)
         layout.addView(inputName)
         layout.addView(inputLocation)
 
         AlertDialog.Builder(this)
-            .setTitle("Configurar e Activar Alarme")
+            .setTitle(getString(R.string.alarm_configurate_activate))
             .setView(layout)
-            .setPositiveButton("Activar") { dialog, _ ->
+            .setPositiveButton(getString(R.string.alarm_activate)) { _, _ ->
                 val alarmId = inputId.text.toString().trim()
                 val name = inputName.text.toString().trim()
                 val location = inputLocation.text.toString().trim()
@@ -189,70 +195,60 @@ class MainActivity : BaseActivity() {
                     )
 
                     database.child("alarms").child(alarmId).updateChildren(updates)
-                        .addOnSuccessListener { Toast.makeText(this, "Alarme ativado com sucesso!", Toast.LENGTH_SHORT).show() }
-                        .addOnFailureListener { Toast.makeText(this, "Erro ao ativar alarme.", Toast.LENGTH_SHORT).show() }
+                        .addOnSuccessListener { Toast.makeText(this, getString(R.string.alarm_activate_success), Toast.LENGTH_SHORT).show() }
+                        .addOnFailureListener { Toast.makeText(this, getString(R.string.alarm_activate_error), Toast.LENGTH_SHORT).show() }
                 } else {
-                    Toast.makeText(this, "Preenche todos os campos.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.general_fields), Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Cancelar", null)
+            .setNegativeButton(getString(R.string.general_cancel), null)
             .show()
     }
 
-    private fun showAssociarAlarmeDialog() {
+    private fun showAssociateAlarmDialog() {
         val layout = LinearLayout(this)
         layout.orientation = LinearLayout.VERTICAL
         layout.setPadding(50, 40, 50, 10)
 
         val inputId = EditText(this)
-        inputId.hint = "ID do Alarme"
+        inputId.hint = getString(R.string.placeholder_alarm_id)
 
         val inputEmail = EditText(this)
-        inputEmail.hint = "Email do Cliente"
+        inputEmail.hint = getString(R.string.placeholder_client_email)
         inputEmail.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
 
         layout.addView(inputId)
         layout.addView(inputEmail)
 
         AlertDialog.Builder(this)
-            .setTitle("Associar Alarme")
+            .setTitle(getString(R.string.general_associate_alarme))
             .setView(layout)
-            .setPositiveButton("Associar") { dialog, _ ->
+            .setPositiveButton(R.string.general_associate) { _, _ ->
                 val alarmId = inputId.text.toString().trim()
                 val email = inputEmail.text.toString().trim()
 
                 if (alarmId.isNotEmpty() && email.isNotEmpty()) {
-                    // Pesquisa o utilizador pelo email
                     database.child("users").orderByChild("email").equalTo(email)
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 if (snapshot.exists()) {
-                                    // A Firebase devolve uma lista de resultados (mesmo que seja só 1), iteramos
                                     for (userSnap in snapshot.children) {
                                         val targetUserId = userSnap.key ?: continue
-
-                                        // ==========================================
-                                        // MUDANÇA 2: DEFINIR PERMISSÃO E O OWNER_ID
-                                        // ==========================================
-
-                                        // 1. Dar permissão de acesso ao utilizador
                                         database.child("users").child(targetUserId).child("alarms").child(alarmId).setValue(true)
-
-                                        // 2. Definir este utilizador como o DONO do alarme na pasta global
                                         database.child("alarms").child(alarmId).child("ownerId").setValue(targetUserId)
                                             .addOnSuccessListener {
-                                                Toast.makeText(this@MainActivity, "Alarme associado e dono definido!", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(this@MainActivity, getString(R.string.alarm_created_associated), Toast.LENGTH_SHORT).show()
                                             }
                                     }
                                 } else {
-                                    Toast.makeText(this@MainActivity, "Utilizador não encontrado.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this@MainActivity, getString(R.string.general_user_notfound), Toast.LENGTH_SHORT).show()
                                 }
                             }
                             override fun onCancelled(error: DatabaseError) {}
                         })
                 }
             }
-            .setNegativeButton("Cancelar", null)
+            .setNegativeButton(getString(R.string.general_cancel), null)
             .show()
     }
 

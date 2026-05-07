@@ -5,15 +5,11 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- ========================================== -->
-    <!-- 1. CONTEÚDO PRINCIPAL (Centro do ecrã)     -->
-    <!-- ========================================== -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Barra Superior -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -23,9 +19,10 @@
 
             <ImageView
                 android:id="@+id/ivMenuIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:contentDescription="@string/app_name"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="8dp"
+                android:contentDescription="@string/desc_menu_icon"
                 android:src="@drawable/ic_profile"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
@@ -49,7 +46,6 @@
             android:layout_height="match_parent"
             android:padding="20dp">
 
-            <!-- DASHBOARD DO USER  -->
             <RelativeLayout
                 android:id="@+id/layoutUserDashboard"
                 android:layout_width="match_parent"
@@ -67,7 +63,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/nenhum_alarme"
+                        android:text="@string/empty_state_no_alarms"
                         android:textColor="#7A8B99"
                         android:textSize="16sp"
                         android:textAlignment="center"/>
@@ -82,7 +78,6 @@
                     android:paddingBottom="20dp"/>
             </RelativeLayout>
 
-            <!-- DASHBOARD DO INSTALLER  -->
             <LinearLayout
                 android:id="@+id/layoutInstallerDashboard"
                 android:layout_width="match_parent"
@@ -92,22 +87,22 @@
                 android:visibility="gone">
 
                 <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnActivarAlarme"
+                    android:id="@+id/btnActivatorAlarm"
                     android:layout_width="match_parent"
                     android:layout_height="70dp"
                     android:layout_marginBottom="24dp"
                     android:background="@drawable/bg_button"
-                    android:text="@string/btn_activar_alarme"
+                    android:text="@string/btn_activate_alarm"
                     android:textColor="#000000"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnAssociarAlarme"
+                    android:id="@+id/btnAssociateAlarm"
                     android:layout_width="match_parent"
                     android:layout_height="70dp"
                     android:background="@drawable/bg_button"
-                    android:text="@string/btn_associar_alarme"
+                    android:text="@string/btn_associate_alarm"
                     android:textColor="#000000"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -115,9 +110,6 @@
         </RelativeLayout>
     </LinearLayout>
 
-    <!-- ========================================== -->
-    <!-- 2. GAVETA LATERAL (Tem de ser o último)    -->
-    <!-- ========================================== -->
     <include layout="@layout/component_slider" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

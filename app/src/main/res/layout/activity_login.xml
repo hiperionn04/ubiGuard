@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- O formulário embrulhado no ScrollView -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,7 +15,6 @@
             android:gravity="center"
             android:orientation="vertical"
             android:padding="32dp">
-            <!-- Mudei o gravity para "center" para ficar igual ao registo -->
 
             <ImageView
                 android:id="@+id/ivLogo"
@@ -24,7 +22,7 @@
                 android:layout_height="220dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="40dp"
-                android:contentDescription=""
+                android:contentDescription="@string/app_name"
                 android:scaleType="fitCenter"
                 android:src="@drawable/logo_ubiguard" />
 
@@ -61,7 +59,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:background="@drawable/bg_button"
-                android:text="@string/btn_entrar"
+                android:text="@string/btn_login"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -71,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="@string/nao_tem_conta"
+                android:text="@string/msg_no_account"
                 android:textColor="#00D0FF"
                 android:textSize="14sp"
                 android:textStyle="bold"

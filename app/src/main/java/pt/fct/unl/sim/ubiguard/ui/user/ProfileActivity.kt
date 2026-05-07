@@ -1,4 +1,4 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.ui.user
 
 import android.os.Bundle
 import android.view.View
@@ -11,6 +11,8 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import pt.fct.unl.sim.ubiguard.R
+import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
 
 // 1. Herda de BaseActivity
 class ProfileActivity : BaseActivity() {
@@ -25,7 +27,6 @@ class ProfileActivity : BaseActivity() {
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
 
-        // 2. ATIVAR A GAVETA MAGICA
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val ivMenuIcon = findViewById<ImageView>(R.id.ivMenuIcon)
         ativarSliderComponent(drawerLayout, ivMenuIcon)
@@ -39,7 +40,7 @@ class ProfileActivity : BaseActivity() {
 
         val currentUser = auth.currentUser
         if (currentUser == null) {
-            Toast.makeText(this, "Erro de sessão.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_session), Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -47,12 +48,12 @@ class ProfileActivity : BaseActivity() {
         val userId = currentUser.uid
         val email = currentUser.email
 
-        tvProfileEmail.text = email ?: "Sem email"
+        tvProfileEmail.text = email ?: getString(R.string.error_no_email)
 
         database.child("users").child(userId).get()
             .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
-                    val name = snapshot.child("name").getValue(String::class.java) ?: "Desconhecido"
+                    val name = snapshot.child("name").getValue(String::class.java) ?: getString(R.string.general_unknown)
                     val accountType = snapshot.child("account_type").getValue(String::class.java) ?: "User"
 
                     tvProfileName.text = name
@@ -61,12 +62,12 @@ class ProfileActivity : BaseActivity() {
                     progressBar.visibility = View.GONE
                     layoutContent.visibility = View.VISIBLE
                 } else {
-                    Toast.makeText(this, "Perfil não encontrado na BD.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.error_profile_notfound), Toast.LENGTH_SHORT).show()
                     finish()
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Erro a carregar perfil.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.error_loading_profile), Toast.LENGTH_SHORT).show()
                 finish()
             }
     }

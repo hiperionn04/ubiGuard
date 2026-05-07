@@ -10,7 +10,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Barra Superior -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -23,6 +22,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/ic_profile"
+                android:contentDescription="@string/desc_menu_icon"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"/>
@@ -31,7 +31,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/estado_dos_sensores"
+                android:text="@string/title_sensors_status"
                 android:textColor="#00D0FF"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -40,7 +40,6 @@
                 android:layout_marginEnd="32dp"/>
         </LinearLayout>
 
-        <!-- Pedir o ID do Alarme -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,8 +52,9 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_weight="1"
+                android:autofillHints=""
                 android:background="@drawable/bg_input"
-                android:hint="@string/id_do_alarme"
+                android:hint="@string/hint_alarm_id"
                 android:textColor="#FFFFFF"
                 android:textColorHint="#4A4A4A"
                 android:paddingStart="16dp"
@@ -67,12 +67,11 @@
                 android:layout_height="50dp"
                 android:layout_marginStart="12dp"
                 android:background="@drawable/bg_button"
-                android:text="@string/procurar"
+                android:text="@string/btn_search"
                 android:textColor="#000000"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Lista de Sensores -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -91,7 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="@string/insere_procurar_sensores"
+                android:text="@string/empty_state_search_sensors"
                 android:textColor="#7A8B99"
                 android:textSize="16sp"
                 android:textAlignment="center"/>

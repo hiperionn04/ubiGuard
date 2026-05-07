@@ -15,6 +15,7 @@
         android:layout_marginBottom="32dp"
         android:layout_gravity="center_horizontal"
         android:src="@drawable/ic_profile"
+        android:contentDescription="@string/desc_menu_icon"
         app:tint="#00D0FF" />
 
     <View
@@ -23,12 +24,11 @@
         android:background="#1A1A1A"
         android:layout_marginBottom="24dp"/>
 
-    <!-- DASHBOARD (Apenas Installer - Escondido por defeito) -->
     <TextView
         android:id="@+id/menuDashboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Dashboard"
+        android:text="@string/menu_dashboard"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -36,36 +36,33 @@
         android:visibility="gone"
         android:background="?attr/selectableItemBackground"/>
 
-    <!-- O MEU PERFIL (Todos veem) -->
     <TextView
-        android:id="@+id/menuPerfil"
+        android:id="@+id/menuProfile"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="O Meu Perfil"
+        android:text="@string/menu_profile"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
         android:padding="16dp"
         android:background="?attr/selectableItemBackground"/>
 
-    <!-- ALARMES (Todos veem) -->
     <TextView
-        android:id="@+id/menuAlarmes"
+        android:id="@+id/menuAlarms"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Alarmes"
+        android:text="@string/menu_alarms"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
         android:padding="16dp"
         android:background="?attr/selectableItemBackground"/>
 
-    <!-- SENSORES (Apenas Installer - Escondido por defeito) -->
     <TextView
-        android:id="@+id/menuSensores"
+        android:id="@+id/menuSensors"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sensores"
+        android:text="@string/menu_sensors"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -73,12 +70,11 @@
         android:visibility="gone"
         android:background="?attr/selectableItemBackground"/>
 
-    <!-- LOGS (Apenas Installer - Escondido por defeito) -->
     <TextView
         android:id="@+id/menuLogs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Logs do Sistema"
+        android:text="@string/menu_system_logs"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -91,12 +87,11 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- LOGOUT (Todos veem) -->
     <TextView
         android:id="@+id/menuLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Terminar Sessão"
+        android:text="@string/menu_logout"
         android:textColor="#FF3B30"
         android:textSize="16sp"
         android:textStyle="bold"

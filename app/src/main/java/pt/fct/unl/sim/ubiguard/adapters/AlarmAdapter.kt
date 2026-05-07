@@ -1,11 +1,13 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
 import androidx.core.graphics.toColorInt
+import androidx.recyclerview.widget.RecyclerView
+import pt.fct.unl.sim.ubiguard.R
+import pt.fct.unl.sim.ubiguard.models.Alarm
 
 class AlarmAdapter(
     private val alarmList: List<Alarm>,
@@ -28,11 +30,13 @@ class AlarmAdapter(
         holder.tvName.text = alarm.name
         holder.tvLocation.text = alarm.location
 
+        val context = holder.itemView.context
+
         if (alarm.status.lowercase() == "armado") {
-            holder.tvStatus.text = "ARMADO"
+            holder.tvStatus.text = context.getString(R.string.general_armed)
             holder.tvStatus.setTextColor("#00D0FF".toColorInt())
         } else {
-            holder.tvStatus.text = "DESARMADO"
+            holder.tvStatus.text = context.getString(R.string.general_disarmed)
             holder.tvStatus.setTextColor("#FF3B30".toColorInt())
         }
 

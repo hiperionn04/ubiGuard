@@ -1,10 +1,11 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import pt.fct.unl.sim.ubiguard.R
 
 class LogAdapter(private val logList: List<String>) : RecyclerView.Adapter<LogAdapter.LogViewHolder>() {
 

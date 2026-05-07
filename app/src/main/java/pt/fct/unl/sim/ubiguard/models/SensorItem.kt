@@ -1,4 +1,4 @@
-package pt.fct.unl.sim.ubiguard
+package pt.fct.unl.sim.ubiguard.models
 
 data class SensorItem(
     val name: String,
