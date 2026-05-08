@@ -19,8 +19,9 @@
 
             <ImageView
                 android:id="@+id/ivMenuIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_profile"
                 android:contentDescription="@string/desc_menu_icon"
                 android:background="?attr/selectableItemBackgroundBorderless"
@@ -78,6 +79,17 @@
                         android:textSize="32sp"
                         android:textStyle="bold"
                         android:layout_marginTop="8dp"/>
+
+                    <TextView
+                        android:id="@+id/tvUserDetEmergency"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/status_safe"
+                        android:textColor="#00D0FF"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"
+                        android:letterSpacing="0.1"/>
 
                     <TextView
                         android:id="@+id/tvUserDetAddress"

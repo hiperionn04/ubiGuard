@@ -162,4 +162,7 @@
     <string name="hint_new_pin">Novo PIN (Pelo menos 4 dígitos)</string>
     <string name="msg_pin_updated">PIN atualizado com sucesso!</string>
     <string name="msg_invalid_pin">O PIN deve ter pelo menos 4 dígitos.</string>
+
+    <string name="status_fired">DISPARADO</string>
+    <string name="status_safe">Sistema Seguro</string>
 </resources>

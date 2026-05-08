@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import pt.fct.unl.sim.ubiguard.R
@@ -26,6 +27,8 @@ class InstallerSensorsActivity : BaseActivity() {
 
     private val sensorList = mutableListOf<SensorItem>()
     private lateinit var sensorAdapter: SensorAdapter
+    private var sensorListener: ValueEventListener? = null
+    private var currentAlarmRef: DatabaseReference? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,55 +61,65 @@ class InstallerSensorsActivity : BaseActivity() {
             rvSensors.visibility = View.GONE
             tvEmptyState.visibility = View.GONE
             progressBar.visibility = View.VISIBLE
-            sensorList.clear()
 
-            database.child("alarms").child(alarmId).child("sensors")
-                .addListenerForSingleValueEvent(object : ValueEventListener {
+            sensorListener?.let { currentAlarmRef?.removeEventListener(it) }
 
-                    @SuppressLint("NotifyDataSetChanged")
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        progressBar.visibility = View.GONE
+            currentAlarmRef = database.child("alarms").child(alarmId).child("sensors")
 
-                        if (!snapshot.exists()) {
-                            tvEmptyState.text = getString(R.string.alarm_no_sensors)
-                            tvEmptyState.visibility = View.VISIBLE
-                            return
-                        }
+            sensorListener = currentAlarmRef!!.addValueEventListener(object : ValueEventListener {
 
-                        for (child in snapshot.children) {
-                            val sensorName = child.key ?: continue
-                            val value = child.value
+                @SuppressLint("NotifyDataSetChanged")
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    progressBar.visibility = View.GONE
 
-                            if (value is Boolean) {
-                                sensorList.add(SensorItem(sensorName, value, null))
+                    sensorList.clear()
 
-                            } else if (value is Map<*, *>) {
-                                val isActivated = value["activated"] as? Boolean ?: false
-                                val lastRead = value["last_read"]?.toString()
+                    if (!snapshot.exists()) {
+                        tvEmptyState.text = getString(R.string.alarm_no_sensors)
+                        tvEmptyState.visibility = View.VISIBLE
+                        sensorAdapter.notifyDataSetChanged()
+                        return
+                    }
 
-                                sensorList.add(SensorItem(sensorName, isActivated, lastRead))
-                            }
-                        }
+                    for (child in snapshot.children) {
+                        val sensorName = child.key ?: continue
+                        val value = child.value
 
-                        if (sensorList.isEmpty()) {
-                            tvEmptyState.text = getString(R.string.general_no_data)
-                            tvEmptyState.visibility = View.VISIBLE
-                        } else {
-                            rvSensors.visibility = View.VISIBLE
-                            sensorAdapter.notifyDataSetChanged()
+                        if (value is Boolean) {
+                            sensorList.add(SensorItem(sensorName, value, null))
+                        } else if (value is Map<*, *>) {
+                            val isActivated = value["activated"] as? Boolean ?: false
+                            val lastRead = value["last_read"]?.toString()
+                            sensorList.add(SensorItem(sensorName, isActivated, lastRead))
                         }
                     }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        progressBar.visibility = View.GONE
-                        Toast.makeText(this@InstallerSensorsActivity, getString(R.string.error_loading_sensors), Toast.LENGTH_SHORT).show()
+                    if (sensorList.isEmpty()) {
+                        tvEmptyState.text = getString(R.string.general_no_data)
+                        tvEmptyState.visibility = View.VISIBLE
+                    } else {
+                        tvEmptyState.visibility = View.GONE
+                        rvSensors.visibility = View.VISIBLE
                     }
-                })
+
+                    sensorAdapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(this@InstallerSensorsActivity, getString(R.string.error_loading_sensors), Toast.LENGTH_SHORT).show()
+                }
+            })
         }
         val prefillId = intent.getStringExtra("ALARM_ID_PREFILL")
         if (prefillId != null) {
             etAlarmId.setText(prefillId)
             btnSearch.performClick()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        sensorListener?.let { currentAlarmRef?.removeEventListener(it) }
     }
 }

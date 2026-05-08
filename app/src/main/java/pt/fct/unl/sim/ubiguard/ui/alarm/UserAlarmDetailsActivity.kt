@@ -122,8 +122,7 @@ class UserAlarmDetailsActivity : BaseActivity() {
     private fun loadAlarmDetails() {
         val currentUserUid = auth.currentUser?.uid ?: return
 
-        database.child("alarms").child(alarmId!!).addValueEventListener(object :
-            ValueEventListener {
+        database.child("alarms").child(alarmId!!).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!snapshot.exists()) return
 
@@ -132,19 +131,31 @@ class UserAlarmDetailsActivity : BaseActivity() {
                 val status = snapshot.child("status").getValue(String::class.java) ?: getString(R.string.general_unknown_status)
                 val ownerId = snapshot.child("ownerId").getValue(String::class.java)
 
+                val isFired = snapshot.child("isFired").getValue(Boolean::class.java) ?: false
+
                 currentStatus = status
                 findViewById<TextView>(R.id.tvUserDetName).text = name
                 findViewById<TextView>(R.id.tvUserDetAddress).text = address
 
                 val tvStatus = findViewById<TextView>(R.id.tvUserDetStatus)
-                tvStatus.text = status.uppercase()
+                val btnToggle = findViewById<Button>(R.id.btnToggleAlarm)
 
+                tvStatus.text = status.uppercase()
                 if (status == "Armado") {
                     tvStatus.setTextColor("#00D0FF".toColorInt())
-                    findViewById<Button>(R.id.btnToggleAlarm).text = getString(R.string.alarm_disarm)
+                    btnToggle.text = getString(R.string.alarm_disarm)
                 } else {
-                    tvStatus.setTextColor("#FF3B30".toColorInt())
-                    findViewById<Button>(R.id.btnToggleAlarm).text = getString(R.string.alarm_arm)
+                    tvStatus.setTextColor("#7A8B99".toColorInt())
+                    btnToggle.text = getString(R.string.alarm_arm)
+                }
+
+                val tvEmergency = findViewById<TextView>(R.id.tvUserDetEmergency)
+                if (isFired) {
+                    tvEmergency.text = getString(R.string.status_fired)
+                    tvEmergency.setTextColor("#FF3B30".toColorInt()) // Vermelho
+                } else {
+                    tvEmergency.text = getString(R.string.status_safe)
+                    tvEmergency.setTextColor("#00D0FF".toColorInt()) // Azul (ou podes usar verde "#34C759")
                 }
 
                 if (ownerId == currentUserUid) {
@@ -220,7 +231,16 @@ class UserAlarmDetailsActivity : BaseActivity() {
 
     private fun toggleAlarmStatus() {
         val newStatus = if (currentStatus == "Armado") "Desarmado" else "Armado"
-        database.child("alarms").child(alarmId!!).child("status").setValue(newStatus)
+
+        val updates = mutableMapOf<String, Any>(
+            "status" to newStatus
+        )
+
+        if (newStatus == "Desarmado") {
+            updates["isFired"] = false
+        }
+
+        database.child("alarms").child(alarmId!!).updateChildren(updates)
     }
 
     @SuppressLint("DefaultLocale", "UseKtx")

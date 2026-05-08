@@ -165,5 +165,7 @@
     <string name="msg_pin_updated">PIN updated successfully!</string>
     <string name="msg_invalid_pin">PIN must be at least 4 digits.</string>
 
+    <string name="status_fired">!! TRIGGERED !!</string>
+    <string name="status_safe">System Safe</string>
 
 </resources>
