@@ -159,4 +159,11 @@
     <string name="btn_activate_alarm">Activate Alarm</string>
     <string name="btn_associate_alarm">Associate Alarm</string>
 
+    <string name="btn_change_pin">CHANGE ALARM PIN</string>
+    <string name="title_change_pin">Change PIN</string>
+    <string name="hint_new_pin">New PIN (At least 4 digits)</string>
+    <string name="msg_pin_updated">PIN updated successfully!</string>
+    <string name="msg_invalid_pin">PIN must be at least 4 digits.</string>
+
+
 </resources>

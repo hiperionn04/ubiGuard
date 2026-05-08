@@ -16,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatButton
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -81,6 +82,41 @@ class UserAlarmDetailsActivity : BaseActivity() {
             intent.putExtra("ALARM_ID", alarmId)
             startActivity(intent)
         }
+
+        findViewById<AppCompatButton>(R.id.btnChangePin).setOnClickListener {
+            showDialogChangePin()
+        }
+    }
+
+    private fun showDialogChangePin() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_change_pin, null)
+        val etNewPin = dialogView.findViewById<EditText>(R.id.etNewPin)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        dialog.window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+
+        dialogView.findViewById<TextView>(R.id.btnCancelPin).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<TextView>(R.id.btnConfirmPin).setOnClickListener {
+            val newPin = etNewPin.text.toString().trim()
+
+            if (newPin.length >= 4) {
+                database.child("alarms").child(alarmId!!).child("pin").setValue(newPin)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, getString(R.string.msg_pin_updated), Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+            } else {
+                etNewPin.error = getString(R.string.msg_invalid_pin)
+            }
+        }
+
+        dialog.show()
     }
 
     private fun loadAlarmDetails() {
