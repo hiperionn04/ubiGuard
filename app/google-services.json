@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "428628768894",
+    "firebase_url": "https://ubiguard-sim-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "ubiguard-sim",
+    "storage_bucket": "ubiguard-sim.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:428628768894:android:9b26b647b7706be030c02f",
+        "android_client_info": {
+          "package_name": "pt.fct.unl.sim.ubiguard"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgQ5-OmUPRlFlopVW7nrqnwSy5xcNmqdk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

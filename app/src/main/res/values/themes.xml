@@ -1,0 +1,42 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.UbiGuard" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <item name="android:statusBarColor">#000000</item>
+
+        <item name="android:windowLightStatusBar">false</item>
+
+    </style>
+
+    <style name="Theme.UbiGuard" parent="Base.Theme.UbiGuard" />
+
+    <style name="CustomPickerTheme" parent="Theme.MaterialComponents.Dialog.Alert">
+
+        <item name="colorPrimary">#00D0FF</item>
+        <item name="colorAccent">#00D0FF</item>
+        <item name="android:colorAccent">#00D0FF</item>
+        <item name="colorOnPrimary">#000000</item> <item name="android:colorBackground">#1A1A1A</item>
+        <item name="android:windowBackground">#1A1A1A</item>
+        <item name="colorSurface">#1A1A1A</item>
+
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="android:textColorSecondary">#7A8B99</item>
+
+        <item name="buttonBarPositiveButtonStyle">@style/CustomPickerButton.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/CustomPickerButton.Negative</item>
+    </style>
+
+    <style name="CustomPickerButton.Positive" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">#00D0FF</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+    </style>
+
+    <style name="CustomPickerButton.Negative" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">#7A8B99</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+    </style>
+
+</resources>
