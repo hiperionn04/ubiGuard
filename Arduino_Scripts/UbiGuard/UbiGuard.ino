@@ -13,8 +13,8 @@
 #include "addons/RTDBHelper.h"
 
 // === Credenciais de Rede e Firebase ===
-#define WIFI_SSID "DisneyLand Resort Paris"
-#define WIFI_PASSWORD "MQ3PSYSP"
+#define WIFI_SSID "iPhone de Afonso"
+#define WIFI_PASSWORD "1234567810"
 #define FIREBASE_API_KEY "AIzaSyCgQ5-OmUPRlFlopVW7nrqnwSy5xcNmqdk"
 #define FIREBASE_DATABASE_URL "https://ubiguard-sim-default-rtdb.europe-west1.firebasedatabase.app/"
 
@@ -156,45 +156,71 @@ void updateDisplay() {
 }
 
 // ==========================================
-// FUNÇÕES DE STREAM (FIREBASE -> ESP32)
+// FUNÇÕES DE PROCESSAMENTO DE DADOS 
+// (Usadas pelo Stream para não repetir código)
 // ==========================================
-void streamCallback(FirebaseStream data) {
-  String path = data.dataPath(); 
-  String value = data.stringData(); 
-
-  // Se a App mudar o PIN
-  if (path == "/pin" && value != "" && value != CORRECT_PIN) {
-    CORRECT_PIN = value;
+void processPinChange(String novoPin) {
+  if (novoPin != "" && novoPin != CORRECT_PIN) {
+    CORRECT_PIN = novoPin;
     preferences.putString("pin", CORRECT_PIN);
     Serial.println("[FIREBASE] Novo PIN recebido da App: " + CORRECT_PIN);
     if (!alarmTriggered && !fireTriggered) { tone(BUZZER_PIN, 2000, 100); delay(150); tone(BUZZER_PIN, 2000, 100); }
     addLog("PIN do alarme alterado pela App");
   }
+}
 
-  // Se a App mudar o STATUS (Armar/Desarmar)
-  if (path == "/status") {
-    if (value == "Armado" && !armed) {
-      armed = true;
-      alarmTriggered = false; 
-      updateLeds();
-      updateDisplay();
-      Serial.println("[FIREBASE] Sistema ARMADO remotamente.");
-      tone(BUZZER_PIN, 1500, 200); 
-      addLog("Sistema Armado pela App");
-      
-      if (signupOK && !fireTriggered) Firebase.RTDB.setBoolAsync(&fbdo, "/alarms/" + alarmUID + "/isFired", false);
-    } 
-    else if (value == "Desarmado" && armed) {
-      armed = false;
-      alarmTriggered = false;
-      noTone(BUZZER_PIN); 
-      updateLeds();
-      updateDisplay();
-      Serial.println("[FIREBASE] Sistema DESARMADO remotamente.");
-      tone(BUZZER_PIN, 1000, 150); delay(150); tone(BUZZER_PIN, 1000, 150); 
-      addLog("Sistema Desarmado pela App");
-      
-      if (signupOK && !fireTriggered) Firebase.RTDB.setBoolAsync(&fbdo, "/alarms/" + alarmUID + "/isFired", false);
+void processStatusChange(String novoStatus) {
+  if (novoStatus == "Armado" && !armed) {
+    armed = true;
+    alarmTriggered = false; 
+    updateLeds();
+    updateDisplay();
+    Serial.println("[FIREBASE] Sistema ARMADO remotamente.");
+    tone(BUZZER_PIN, 1500, 200); 
+    addLog("Sistema Armado pela App");
+  } 
+  else if (novoStatus == "Desarmado" && armed) {
+    armed = false;
+    alarmTriggered = false;
+    noTone(BUZZER_PIN); 
+    updateLeds();
+    updateDisplay();
+    Serial.println("[FIREBASE] Sistema DESARMADO remotamente.");
+    tone(BUZZER_PIN, 1000, 150); delay(150); tone(BUZZER_PIN, 1000, 150); 
+    addLog("Sistema Desarmado pela App");
+  }
+}
+
+// ==========================================
+// FUNÇÕES DE STREAM (FIREBASE -> ESP32)
+// ==========================================
+void streamCallback(FirebaseStream data) {
+  String path = data.dataPath(); 
+  String dataType = data.dataType(); 
+
+  // Descomenta a linha abaixo se quiseres ver no Serial Monitor a estrutura dos dados que chegam
+  // Serial.println("[STREAM] Evento: " + path + " | Tipo: " + dataType);
+
+  // 1. Alteração direta de um único campo
+  if (path == "/pin") {
+    processPinChange(data.stringData());
+  }
+  else if (path == "/status") {
+    processStatusChange(data.stringData());
+  }
+  
+  // 2. Alteração por "Pacote" JSON (Ex: quando a App usa updateChildren)
+  else if (path == "/" && dataType == "json") {
+    FirebaseJson json;
+    json.setJsonData(data.payload()); 
+    FirebaseJsonData jsonData;
+
+    if (json.get(jsonData, "status")) {
+      processStatusChange(jsonData.stringValue);
+    }
+    
+    if (json.get(jsonData, "pin")) {
+      processPinChange(jsonData.stringValue);
     }
   }
 }
