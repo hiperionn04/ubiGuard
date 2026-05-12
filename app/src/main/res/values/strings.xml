@@ -165,4 +165,31 @@
 
     <string name="status_fired">DISPARADO</string>
     <string name="status_safe">Sistema Seguro</string>
+
+    <string name="notification_activated">UbiGuard Ativo</string>
+    <string name="notification_monitoring">A monitorizar o seu sistema de segurança...</string>
+    <string name="notification_alarm_triggered">🚨 ALARME DISPARADO 🚨</string>
+    <string name="notification_fire_alarm">Intrusão ou incêndio detetado no alarme: %s!</string>
+    <string name="notification_unknown_alarm">Alarme Desconhecido</string>
+    <string name="notification_status_armed_title">🔒 Sistema Armado</string>
+    <string name="notification_status_disarmed_title">🔓 Sistema Desarmado</string>
+    <string name="notification_status_armed_desc">O alarme \'%1$s\' foi armado.</string>
+    <string name="notification_status_disarmed_desc">O alarme \'%1$s\' foi desarmado.</string>
+
+    <string name="notification_pin_changed_title">🔑 PIN Alterado</string>
+    <string name="notification_pin_changed_desc">O PIN de segurança do alarme \'%1$s\' foi modificado.</string>
+
+    <string name="channel_info_name">Avisos de Estado</string>
+
+    <string name="notification_offline_title">⚠️ Alarme Offline</string>
+    <string name="notification_offline_desc">O alarme \'%1$s\' perdeu a ligação ao Wi-Fi!</string>
+
+    <string name="notification_online_title">Alarme Online</string>
+    <string name="notification_online_desc">O alarme \'%1$s\' recuperou a ligação ao Wi-Fi!</string>
+
+    <string name="notification_left_home_title">Saiu de casa?</string>
+    <string name="notification_left_home_desc">Parece que se afastou do alarme \'%1$s\'. Quer armar o sistema?</string>
+    <string name="action_arm_now">Armar Agora</string>
+    <string name="toast_armed_remotely">Alarme armado remotamente!</string>
+
 </resources>

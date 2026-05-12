@@ -168,4 +168,30 @@
     <string name="status_fired">!! TRIGGERED !!</string>
     <string name="status_safe">System Safe</string>
 
+    <string name="notification_activated">UbiGuard Active</string>
+    <string name="notification_monitoring">Monitoring your security system...</string>
+    <string name="notification_alarm_triggered">🚨 ALARME TRIGGERED 🚨</string>
+    <string name="notification_fire_alarm">Intrusion or fire detected by the alarm: %s!</string>
+    <string name="notification_unknown_alarm">Unknown alarm</string>
+    <string name="notification_status_armed_title">🔒 System Armed</string>
+    <string name="notification_status_disarmed_title">🔓 System Disarmed</string>
+    <string name="notification_status_armed_desc">The alarm \'%1$s\' has been armed.</string>
+    <string name="notification_status_disarmed_desc">The alarm \'%1$s\' has been disarmed.</string>
+
+    <string name="notification_pin_changed_title">🔑 PIN Changed</string>
+    <string name="notification_pin_changed_desc">The security PIN for the alarm \'%1$s\' has been modified.</string>
+
+    <string name="channel_info_name">Status Alerts</string>
+
+    <string name="notification_offline_title">⚠️ Alarm Offline</string>
+    <string name="notification_offline_desc">The alarm \'%1$s\' lost its Wi-Fi connection!</string>
+
+    <string name="notification_online_title">Alarm Online</string>
+    <string name="notification_online_desc">The alarm \'%1$s\' regained Wi-Fi connection!</string>
+
+    <string name="notification_left_home_title">Left home?</string>
+    <string name="notification_left_home_desc">It looks like you moved away from \'%1$s\'. Want to arm the system?</string>
+    <string name="action_arm_now">Arm Now</string>
+    <string name="toast_armed_remotely">Alarm armed remotely!</string>
+
 </resources>

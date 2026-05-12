@@ -33,6 +33,7 @@ bool signupOK = false;
 
 DHT dht(DHT_PIN, DHT_TYPE);
 unsigned long lastDhtRead = 0;
+unsigned long lastHeartbeat = 0;
 float lastTemp = 0.0; 
 
 // === Atuadores ===
@@ -379,9 +380,16 @@ void setup() {
     }
   }
 
-  // INICIAR ESCUTA FIREBASE
+// INICIAR ESCUTA FIREBASE
   if (signupOK) {
-    String alarmPath = "/alarms/" + alarmUID; 
+    String alarmPath = "/alarms/" + alarmUID;
+    Firebase.RTDB.setStringAsync(&fbdo, (alarmPath + "/network/ssid").c_str(), WiFi.SSID());
+
+    double homeLat = 38.662778;
+    double homeLng = -9.204889;
+    Firebase.RTDB.setDoubleAsync(&fbdo, (alarmPath + "/network/lat").c_str(), homeLat);
+    Firebase.RTDB.setDoubleAsync(&fbdo, (alarmPath + "/network/lng").c_str(), homeLng);
+
     Firebase.RTDB.beginStream(&streamFbdo, alarmPath.c_str());
     Firebase.RTDB.setStreamCallback(&streamFbdo, streamCallback, streamTimeoutCallback);
   }
@@ -583,4 +591,13 @@ void loop() {
       } 
     }
   }
+
+  // --- Heartbeat (Sinal de Vida para a Firebase) ---
+  if (millis() - lastHeartbeat > 30000) {  // De 30 em 30 segundos
+    lastHeartbeat = millis();
+    if (signupOK && isActivated) {
+      Firebase.RTDB.setIntAsync(&fbdo, "/alarms/" + alarmUID + "/heartbeat", millis() / 1000);
+    }
+  }
+
 }

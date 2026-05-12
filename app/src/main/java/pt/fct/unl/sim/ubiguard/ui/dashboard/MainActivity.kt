@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.Toast
+import android.os.Build
 import androidx.appcompat.widget.AppCompatButton
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -66,6 +67,10 @@ class MainActivity : BaseActivity() {
             Toast.makeText(this, getString(R.string.error_loading_profile), Toast.LENGTH_SHORT).show()
             setupDashboard("User", userId)
         }
+
+        startMonitorService()
+
+        checkInitialPermissions()
     }
 
     private fun setupDashboard(accountType: String, userId: String) {
@@ -250,6 +255,64 @@ class MainActivity : BaseActivity() {
             }
             .setNegativeButton(getString(R.string.general_cancel), null)
             .show()
+    }
+
+    private fun startMonitorService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
+        }
+
+        val serviceIntent = Intent(this, pt.fct.unl.sim.ubiguard.services.AlarmMonitorService::class.java)
+
+        super.startForegroundService(serviceIntent)
+    }
+
+    private fun checkInitialPermissions() {
+        val missingPermissions = mutableListOf<String>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                missingPermissions.add(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            missingPermissions.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            missingPermissions.add(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
+
+        if (missingPermissions.isNotEmpty()) {
+            androidx.core.app.ActivityCompat.requestPermissions(this, missingPermissions.toTypedArray(), 100)
+        } else {
+            checkBackgroundPermission()
+        }
+    }
+
+    private fun checkBackgroundPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_BACKGROUND_LOCATION) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+
+                AlertDialog.Builder(this)
+                    .setTitle("Wi-Fi")
+                    .setMessage("For UbiGuard to automatically disarm the alarm when you arrive home, we need you to set location access to 'Allow all the time'.")
+                    .setPositiveButton("Configure") { _, _ ->
+                        androidx.core.app.ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION), 101)
+                    }
+                    .setNegativeButton("Not now", null)
+                    .setCancelable(false)
+                    .show()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == 100) {
+            checkInitialPermissions()
+        }
     }
 
     override fun onDestroy() {
