@@ -1,3 +1,11 @@
+# TEAM
+
+* Afonso Simões - 73204
+* Francisca Inácio73 - 73986
+* Nasha Bagasse - 60913
+
+---
+
 # UbiGuard - Smart IoT Security System
 
 **UbiGuard** is an intelligent and distributed (IoT) alarm system focused on residential security. It consists of a hardware device (based on an ESP32) and an Android mobile application, connected in real-time via Google Firebase. 
@@ -142,4 +150,3 @@ To test this is necessary to create at least 3 accounts, one for Installer (shou
 2. **Change the PIN:** Type the PIN + `B`. Then the screen will pop-up `NOVO PIN`. Type the new PIN + `#`. The App will silently update to reflect the new PIN and an notification saying the PIN was updated is sent.
 
 ---
-*Developed for academic/research purposes. UbiGuard - Security that follows you.*
