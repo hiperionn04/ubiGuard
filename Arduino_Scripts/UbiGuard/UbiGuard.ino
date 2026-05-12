@@ -9,12 +9,11 @@
 // === Bibliotecas Wi-Fi e Firebase ===
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
+#include <WiFiManager.h>
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-// === Credenciais de Rede e Firebase ===
-#define WIFI_SSID "iPhone de Afonso"
-#define WIFI_PASSWORD "1234567810"
+// === Credenciais Firebase ===
 #define FIREBASE_API_KEY "AIzaSyCgQ5-OmUPRlFlopVW7nrqnwSy5xcNmqdk"
 #define FIREBASE_DATABASE_URL "https://ubiguard-sim-default-rtdb.europe-west1.firebasedatabase.app/"
 
@@ -246,14 +245,41 @@ void setup() {
   display.clearDisplay();
   display.display();
 
-  // LIGAR AO WI-FI
-  Serial.print("[WIFI] A ligar a ");
-  Serial.println(WIFI_SSID);
-  display.setCursor(0,20); display.print("A ligar Wi-Fi..."); display.display();
+// ==========================================
+  // LIGAR AO WI-FI (WIFI MANAGER)
+  // ==========================================
+  display.clearDisplay();
+  display.setCursor(0, 20); 
+  display.print("A iniciar Wi-Fi..."); 
+  display.display();
+
+  WiFiManager wm;
   
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+  // wm.resetSettings(); // Descomenta isto só 1 vez se quiseres forçar o ESP a esquecer a rede antiga
+
+  String apName = "UbiGuard_" + alarmUID.substring(6); 
+
+  if (!wm.autoConnect(apName.c_str())) {
+    Serial.println("[WIFI] Falha ao ligar. A iniciar Ponto de Acesso!");
+    
+    display.clearDisplay();
+    display.setCursor(0, 0);  display.print("SEM INTERNET!");
+    display.setCursor(0, 20); display.print("Ligue-se a rede:");
+    display.setCursor(0, 32); display.print(apName);
+    display.setCursor(0, 50); display.print("no telemovel.");
+    display.display();
+    
+    while (WiFi.status() != WL_CONNECTED) { 
+        delay(500); 
+    }
+  }
+
   Serial.println("\n[WIFI] Ligado! IP: " + WiFi.localIP().toString());
+  display.clearDisplay();
+  display.setCursor(0, 20); 
+  display.print("Wi-Fi Ligado!"); 
+  display.display();
+  delay(1000);
 
   // CONFIGURAR HORA PELA INTERNET (NTP)
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
@@ -384,11 +410,6 @@ void setup() {
   if (signupOK) {
     String alarmPath = "/alarms/" + alarmUID;
     Firebase.RTDB.setStringAsync(&fbdo, (alarmPath + "/network/ssid").c_str(), WiFi.SSID());
-
-    double homeLat = 38.662778;
-    double homeLng = -9.204889;
-    Firebase.RTDB.setDoubleAsync(&fbdo, (alarmPath + "/network/lat").c_str(), homeLat);
-    Firebase.RTDB.setDoubleAsync(&fbdo, (alarmPath + "/network/lng").c_str(), homeLng);
 
     Firebase.RTDB.beginStream(&streamFbdo, alarmPath.c_str());
     Firebase.RTDB.setStreamCallback(&streamFbdo, streamCallback, streamTimeoutCallback);

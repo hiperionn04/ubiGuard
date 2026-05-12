@@ -38,7 +38,7 @@ class AlarmMonitorService : Service() {
     private var networkCallback: android.net.ConnectivityManager.NetworkCallback? = null
     private var lastConnectedSSID: String = ""
 
-    private var distanceFromHome: Int = 1
+    private var distanceFromHome: Int = 1000 // To Test this change to 1 (means 1 meter and it will trigger the notification 1 minute after disconnecting from the WiFi where ESP is connected)
 
     private lateinit var fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient
 
@@ -342,7 +342,6 @@ class AlarmMonitorService : Service() {
                         Log.d("UBIGUARD_GPS", "Modo Radar ATIVADO! A rastrear movimento de 1 em 1 minuto...")
                         isRadarActive = true
 
-                        // Configurar o radar para atualizar a cada 1 minuto (60000 ms), mínimo de 30s
                         val locationRequest = com.google.android.gms.location.LocationRequest.Builder(
                             com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY, 60000
                         ).setMinUpdateIntervalMillis(30000).build()
@@ -361,7 +360,6 @@ class AlarmMonitorService : Service() {
 
                                 Log.d("UBIGUARD_GPS", "Radar check: Distância atual = ${distanceInMeters.toInt()} metros.")
 
-                                // Usando a tua variável distanceFromHome
                                 if (distanceInMeters > distanceFromHome) {
                                     Log.d("UBIGUARD_GPS", "Passou o limite de $distanceFromHome metros! A enviar notificação.")
 
@@ -370,12 +368,11 @@ class AlarmMonitorService : Service() {
                                             triggerForgotToArmNotification(alarmId)
                                         }
                                     }
-                                    stopRadarMode() // Trabalho feito, poupar bateria
+                                    stopRadarMode()
                                 }
                             }
                         }
 
-                        // Ligar o motor do GPS
                         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback!!, Looper.getMainLooper())
                     }
                 }

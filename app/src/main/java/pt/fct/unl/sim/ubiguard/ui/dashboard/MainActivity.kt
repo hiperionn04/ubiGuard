@@ -39,6 +39,7 @@ class MainActivity : BaseActivity() {
     private var globalAlarmsListener: ValueEventListener? = null
     private var userAlarmsRef: DatabaseReference? = null
     private var globalAlarmsRef: DatabaseReference? = null
+    private lateinit var fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +47,7 @@ class MainActivity : BaseActivity() {
 
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
+        fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(this)
 
         val currentUser = auth.currentUser
         if (currentUser == null) {
@@ -200,7 +202,10 @@ class MainActivity : BaseActivity() {
                     )
 
                     database.child("alarms").child(alarmId).updateChildren(updates)
-                        .addOnSuccessListener { Toast.makeText(this, getString(R.string.alarm_activate_success), Toast.LENGTH_SHORT).show() }
+                        .addOnSuccessListener {
+                            Toast.makeText(this, getString(R.string.alarm_activate_success), Toast.LENGTH_SHORT).show()
+                            saveLocationFirebase(alarmId)
+                        }
                         .addOnFailureListener { Toast.makeText(this, getString(R.string.alarm_activate_error), Toast.LENGTH_SHORT).show() }
                 } else {
                     Toast.makeText(this, getString(R.string.general_fields), Toast.LENGTH_SHORT).show()
@@ -304,6 +309,31 @@ class MainActivity : BaseActivity() {
                     .setCancelable(false)
                     .show()
             }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun saveLocationFirebase(alarmId: String) {
+        if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+
+            android.util.Log.d("UBIGUARD_SETUP", "A obter localização do Instalador...")
+
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val lat = location.latitude
+                    val lng = location.longitude
+
+                    android.util.Log.d("UBIGUARD_SETUP", "Localização apanhada: Lat $lat | Lng $lng")
+
+                    database.child("alarms").child(alarmId).child("network").child("lat").setValue(lat)
+                    database.child("alarms").child(alarmId).child("network").child("lng").setValue(lng)
+
+                } else {
+                    android.util.Log.e("UBIGUARD_SETUP", "Erro: GPS devolveu Null.")
+                }
+            }
+        } else {
+            Toast.makeText(this, "Permissão de GPS necessária para gravar a casa!", Toast.LENGTH_LONG).show()
         }
     }
 
