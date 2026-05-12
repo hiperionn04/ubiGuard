@@ -1,7 +1,7 @@
 # TEAM
 
 * Afonso Simões - 73204
-* Francisca Inácio73 - 73986
+* Francisca Inácio - 73986
 * Nasha Bagasse - 60913
 
 ---
