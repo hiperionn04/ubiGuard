@@ -194,4 +194,8 @@
     <string name="action_arm_now">Arm Now</string>
     <string name="toast_armed_remotely">Alarm armed remotely!</string>
 
+    <string name="toast_emergency_wifi">EMERGENCY MODE ACTIVATED: Direct connection to alarm without internet.</string>
+    <string name="toast_emergency_limited">EMERGENCY MODE ACTIVATED: Limited functionalities.</string>
+
+
 </resources>

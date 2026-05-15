@@ -349,4 +349,24 @@ class MainActivity : BaseActivity() {
         super.onDestroy()
         globalAlarmsListener?.let { globalAlarmsRef?.removeEventListener(it) }
     }
+
+    override fun onResume() {
+        super.onResume()
+        checkEmergencyNetwork()
+    }
+
+    private fun checkEmergencyNetwork() {
+        try {
+            val wifiManager = applicationContext.getSystemService(android.content.Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+            val info = wifiManager.connectionInfo
+            val ssidAtual = info.ssid.replace("\"", "")
+
+            if (ssidAtual == "UbiGuard_Emergencia") {
+                Toast.makeText(this, getString(R.string.toast_emergency_wifi), Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("UBIGUARD", "Erro ao ler Wi-Fi: ${e.message}")
+        }
+    }
+
 }

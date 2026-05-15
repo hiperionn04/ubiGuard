@@ -137,4 +137,23 @@ open class BaseActivity : AppCompatActivity() {
             false
         }
     }
+
+    protected fun isEmergencyNetwork(): Boolean {
+        return try {
+            val wifiManager = applicationContext.getSystemService(android.content.Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+            val info = wifiManager.connectionInfo
+            val ssidAtual = info.ssid.replace("\"", "")
+
+            ssidAtual == "UbiGuard_Emergencia"
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isEmergencyNetwork()) {
+            Toast.makeText(this, "⚠️ MODO EMERGÊNCIA: Sem Internet. Funcionalidades limitadas.", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

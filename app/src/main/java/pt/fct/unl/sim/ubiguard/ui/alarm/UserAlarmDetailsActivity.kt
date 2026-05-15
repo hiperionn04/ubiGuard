@@ -34,6 +34,10 @@ import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
 import java.util.Calendar
 import androidx.core.graphics.toColorInt
 import androidx.core.graphics.drawable.toDrawable
+import kotlinx.coroutines.*
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 class UserAlarmDetailsActivity : BaseActivity() {
 
@@ -45,6 +49,8 @@ class UserAlarmDetailsActivity : BaseActivity() {
     private val accessList = mutableListOf<AccessItem>()
     private lateinit var accessAdapter: AccessAdapter
     private var accessListener: ValueEventListener? = null
+    private var localPollingJob: Job? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,6 +91,30 @@ class UserAlarmDetailsActivity : BaseActivity() {
 
         findViewById<AppCompatButton>(R.id.btnChangePin).setOnClickListener {
             showDialogChangePin()
+        }
+    }
+
+    private fun updateUI(status: String, isFired: Boolean) {
+        currentStatus = status
+        val tvStatus = findViewById<TextView>(R.id.tvUserDetStatus)
+        val btnToggle = findViewById<Button>(R.id.btnToggleAlarm)
+
+        tvStatus.text = status.uppercase()
+        if (status == "Armado") {
+            tvStatus.setTextColor("#00D0FF".toColorInt())
+            btnToggle.text = getString(R.string.alarm_disarm)
+        } else {
+            tvStatus.setTextColor("#7A8B99".toColorInt())
+            btnToggle.text = getString(R.string.alarm_arm)
+        }
+
+        val tvEmergency = findViewById<TextView>(R.id.tvUserDetEmergency)
+        if (isFired) {
+            tvEmergency.text = getString(R.string.status_fired)
+            tvEmergency.setTextColor("#FF3B30".toColorInt())
+        } else {
+            tvEmergency.text = getString(R.string.status_safe)
+            tvEmergency.setTextColor("#00D0FF".toColorInt())
         }
     }
 
@@ -130,33 +160,12 @@ class UserAlarmDetailsActivity : BaseActivity() {
                 val address = snapshot.child("location").getValue(String::class.java) ?: getString(R.string.general_unknown_location)
                 val status = snapshot.child("status").getValue(String::class.java) ?: getString(R.string.general_unknown_status)
                 val ownerId = snapshot.child("ownerId").getValue(String::class.java)
-
                 val isFired = snapshot.child("isFired").getValue(Boolean::class.java) ?: false
 
-                currentStatus = status
                 findViewById<TextView>(R.id.tvUserDetName).text = name
                 findViewById<TextView>(R.id.tvUserDetAddress).text = address
 
-                val tvStatus = findViewById<TextView>(R.id.tvUserDetStatus)
-                val btnToggle = findViewById<Button>(R.id.btnToggleAlarm)
-
-                tvStatus.text = status.uppercase()
-                if (status == "Armado") {
-                    tvStatus.setTextColor("#00D0FF".toColorInt())
-                    btnToggle.text = getString(R.string.alarm_disarm)
-                } else {
-                    tvStatus.setTextColor("#7A8B99".toColorInt())
-                    btnToggle.text = getString(R.string.alarm_arm)
-                }
-
-                val tvEmergency = findViewById<TextView>(R.id.tvUserDetEmergency)
-                if (isFired) {
-                    tvEmergency.text = getString(R.string.status_fired)
-                    tvEmergency.setTextColor("#FF3B30".toColorInt()) // Vermelho
-                } else {
-                    tvEmergency.text = getString(R.string.status_safe)
-                    tvEmergency.setTextColor("#00D0FF".toColorInt()) // Azul (ou podes usar verde "#34C759")
-                }
+                updateUI(status, isFired)
 
                 if (ownerId == currentUserUid) {
                     findViewById<View>(R.id.layoutOwnerOnly).visibility = View.VISIBLE
@@ -232,15 +241,62 @@ class UserAlarmDetailsActivity : BaseActivity() {
     private fun toggleAlarmStatus() {
         val newStatus = if (currentStatus == "Armado") "Desarmado" else "Armado"
 
-        val updates = mutableMapOf<String, Any>(
-            "status" to newStatus
-        )
+        if (isEmergencyNetwork()) {
+            val command = if (newStatus == "Armado") "armar" else "desarmar"
 
-        if (newStatus == "Desarmado") {
-            updates["isFired"] = false
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val url = URL("http://192.168.4.1/$command")
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.requestMethod = "GET"
+                    connection.connectTimeout = 3000
+
+                    if (connection.responseCode == 200) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@UserAlarmDetailsActivity, "Enviado via Rede Local!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@UserAlarmDetailsActivity, "Falha de comunicação local.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        } else {
+            val updates = mutableMapOf<String, Any>("status" to newStatus)
+            if (newStatus == "Desarmado") {
+                updates["isFired"] = false
+            }
+            database.child("alarms").child(alarmId!!).updateChildren(updates)
         }
+    }
 
-        database.child("alarms").child(alarmId!!).updateChildren(updates)
+    private fun startLocalPolling() {
+        localPollingJob = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                try {
+                    val url = URL("http://192.168.4.1/status")
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.requestMethod = "GET"
+                    connection.connectTimeout = 2000
+                    connection.readTimeout = 2000
+
+                    if (connection.responseCode == 200) {
+                        val response = connection.inputStream.bufferedReader().readText()
+                        val json = JSONObject(response)
+
+                        val status = json.getString("status")
+                        val isFired = json.getBoolean("isFired")
+
+                        withContext(Dispatchers.Main) {
+                            updateUI(status, isFired)
+                        }
+                    }
+                } catch (e: Exception) {
+                }
+                delay(2000)
+            }
+        }
     }
 
     @SuppressLint("DefaultLocale", "UseKtx")
@@ -328,6 +384,18 @@ class UserAlarmDetailsActivity : BaseActivity() {
             }
             override fun onCancelled(error: DatabaseError) {}
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isEmergencyNetwork()) {
+            startLocalPolling()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        localPollingJob?.cancel()
     }
 
     override fun onDestroy() {

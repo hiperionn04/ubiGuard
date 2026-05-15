@@ -5,11 +5,14 @@
 #include <Adafruit_SSD1306.h>
 #include <Preferences.h> 
 #include <time.h> 
+#include <vector>
 
 // === Bibliotecas Wi-Fi e Firebase ===
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 #include <WiFiManager.h>
+#include <WebServer.h>
+#include <ArduinoJson.h>
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
@@ -33,7 +36,14 @@ bool signupOK = false;
 DHT dht(DHT_PIN, DHT_TYPE);
 unsigned long lastDhtRead = 0;
 unsigned long lastHeartbeat = 0;
-float lastTemp = 0.0; 
+float lastTemp = 0.0;
+WebServer server(80);
+
+// === Gestão Offline ===
+std::vector<String> offlineLogs;
+const int MAX_OFFLINE_LOGS = 50;
+bool wasOffline = false;
+bool emergencyAPActive = false;
 
 // === Atuadores ===
 #define LED_GREEN_PIN   4    
@@ -89,18 +99,26 @@ void updateLeds() {
 
 void addLog(String message) {
   if (!signupOK || !isActivated) return;
-  
+
   struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) {
-    Serial.println("[LOG] Falha a obter a hora da internet");
-    return;
+  char timeStringBuff[60];
+  
+  if (getLocalTime(&timeinfo)) {
+    strftime(timeStringBuff, sizeof(timeStringBuff), "[%Y-%m-%d %H:%M] - ", &timeinfo);
+  } else {
+    strcpy(timeStringBuff, "[HORA DESCONHECIDA] - ");
   }
   
-  char timeStringBuff[60];
-  strftime(timeStringBuff, sizeof(timeStringBuff), "[%Y-%m-%d %H:%M] - ", &timeinfo);
   String logEntry = String(timeStringBuff) + message;
 
-  Firebase.RTDB.pushStringAsync(&fbdo, "/alarms/" + alarmUID + "/logs", logEntry);
+  if (WiFi.status() == WL_CONNECTED) {
+    Firebase.RTDB.pushStringAsync(&fbdo, "/alarms/" + alarmUID + "/logs", logEntry);
+  } else {
+    if (offlineLogs.size() < MAX_OFFLINE_LOGS) {
+      offlineLogs.push_back(logEntry + " (Sync atrasado)");
+    }
+    Serial.println("[OFFLINE LOG GUARDADO] " + logEntry);
+  }
 }
 
 void updateDisplay() {
@@ -189,6 +207,18 @@ void processStatusChange(String novoStatus) {
     tone(BUZZER_PIN, 1000, 150); delay(150); tone(BUZZER_PIN, 1000, 150); 
     addLog("Sistema Desarmado pela App");
   }
+}
+
+String getEmergenciaPassword() {
+  String pass = CORRECT_PIN;
+  
+  if (pass == "") return "12345678"; 
+  
+  while (pass.length() < 8) {
+    pass += CORRECT_PIN;
+  }
+  
+  return pass;
 }
 
 // ==========================================
@@ -434,12 +464,119 @@ void setup() {
   lastTemp = dht.readTemperature(); 
   updateDisplay(); 
   addLog("Sistema Ligado e Operacional");
+
+
+  // ==========================================
+  // SERVIDOR DE EMERGÊNCIA (LOCAL API)
+  // ==========================================
+  
+  // Rota 1: A App pede o Estado do Alarme
+  server.on("/status", []() {
+    StaticJsonDocument<256> doc;
+    doc["status"] = armed ? "Armado" : "Desarmado";
+    doc["isFired"] = (alarmTriggered || fireTriggered);
+    doc["temp"] = String(lastTemp, 1) + "º";
+    doc["door"] = (digitalRead(DOOR_SENSOR_PIN) == LOW ? "fechada" : "aberta");
+    doc["pir"] = (digitalRead(PIR_SENSOR_PIN) == HIGH ? "detected" : "not_detected");
+    
+    String response;
+    serializeJson(doc, response);
+    server.send(200, "application/json", response);
+  });
+
+  // Rota 2: A App manda Armar
+  server.on("/armar", []() {
+    if (!armed) {
+      armed = true;
+      alarmTriggered = false;
+      updateLeds();
+      updateDisplay();
+      tone(BUZZER_PIN, 1500, 200);
+      addLog("Sistema Armado via Wi-Fi de Emergencia");
+    }
+    server.send(200, "text/plain", "Armado");
+  });
+
+  // Rota 3: A App manda Desarmar
+  server.on("/desarmar", []() {
+    if (armed) {
+      armed = false;
+      alarmTriggered = false;
+      noTone(BUZZER_PIN);
+      updateLeds();
+      updateDisplay();
+      tone(BUZZER_PIN, 1000, 150); delay(150); tone(BUZZER_PIN, 1000, 150);
+      addLog("Sistema Desarmado via Wi-Fi de Emergencia");
+    }
+    server.send(200, "text/plain", "Desarmado");
+  });
+
+  server.begin();
+  Serial.println("[SISTEMA] Servidor Local Iniciado na porta 80");
+}
+
+void syncOfflineData() {
+  if (WiFi.status() != WL_CONNECTED || !signupOK) return;
+
+  Serial.println("\n[SISTEMA] Ligação restabelecida! A sincronizar dados offline...");
+
+  // 1. Enviar todos os Logs retidos na "Caixa Negra"
+  if (offlineLogs.size() > 0) {
+    for (String log : offlineLogs) {
+      Firebase.RTDB.pushStringAsync(&fbdo, "/alarms/" + alarmUID + "/logs", log);
+      delay(50); // Pausa minúscula para não engasgar a ligação
+    }
+    offlineLogs.clear(); // Limpar a caixa negra
+  }
+
+  // 2. Atualizar o estado de TUDO de uma só vez na Firebase
+  FirebaseJson json;
+  json.set("status", armed ? "Armado" : "Desarmado");
+  json.set("isFired", (alarmTriggered || fireTriggered));
+  json.set("pin", CORRECT_PIN);
+  json.set("sensors/Door/last_read", digitalRead(DOOR_SENSOR_PIN) == LOW ? "fechada" : "aberta");
+  json.set("sensors/PIR/last_read", digitalRead(PIR_SENSOR_PIN) == HIGH ? "detected" : "not_detected");
+  json.set("sensors/Temperature/last_read", String(lastTemp, 1) + "º");
+
+  Firebase.RTDB.updateNodeAsync(&fbdo, "/alarms/" + alarmUID, &json);
+
+  // 3. Avisar que a sincronização terminou
+  addLog("Sistema recuperou ligação e sincronizou o estado atual");
+  Serial.println("[SISTEMA] Sincronização concluída.\n");
 }
 
 // ==========================================
 // LOOP PRINCIPAL
 // ==========================================
 void loop() {
+  server.handleClient();
+
+  if (WiFi.status() != WL_CONNECTED) {
+    wasOffline = true;
+    
+    if (!emergencyAPActive) {
+      Serial.println("[SISTEMA] Wi-Fi perdido! A criar AP de Emergencia...");
+      WiFi.mode(WIFI_AP_STA);
+      String apPass = getEmergenciaPassword();
+      WiFi.softAP("UbiGuard_Emergencia", apPass.c_str());
+      emergencyAPActive = true;
+    }
+    
+  } else {
+    if (emergencyAPActive) {
+      Serial.println("[SISTEMA] Internet recuperada. A desligar AP...");
+      WiFi.softAPdisconnect(true);
+      WiFi.mode(WIFI_STA);
+      emergencyAPActive = false;
+    }
+
+    if (wasOffline) {
+      wasOffline = false;
+      syncOfflineData();
+    }
+  }
+
+
   // Atualizar Relógio Ecrã 
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {

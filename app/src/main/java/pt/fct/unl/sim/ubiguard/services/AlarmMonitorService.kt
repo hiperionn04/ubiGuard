@@ -268,8 +268,13 @@ class AlarmMonitorService : Service() {
 
                     Log.d("UBIGUARD_WIFI", "Detetada ligação. O Android diz que o SSID é: [$currentPhoneSSID]")
 
-                    if (currentPhoneSSID.isNotEmpty() && currentPhoneSSID != "<unknown ssid>") {
+                    if (currentPhoneSSID == "UbiGuard_Emergencia") {
+                        Log.d("UBIGUARD_WIFI", "Ligado à rede de Emergência Local. O Serviço entra em modo de repouso passivo.")
+                        stopRadarMode()
+                        return
+                    }
 
+                    if (currentPhoneSSID.isNotEmpty() && currentPhoneSSID != "<unknown ssid>") {
                         if (currentPhoneSSID != lastConnectedSSID) {
                             lastConnectedSSID = currentPhoneSSID
                             Log.d("UBIGUARD_WIFI", "Rede válida e nova! A chamar detetive...")

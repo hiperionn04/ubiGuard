@@ -192,4 +192,9 @@
     <string name="action_arm_now">Armar Agora</string>
     <string name="toast_armed_remotely">Alarme armado remotamente!</string>
 
+    <string name="toast_emergency_wifi">MODO EMERGÊNCIA ATIVO: Ligação direta ao alarme sem Internet.</string>
+    <string name="toast_emergency_limited">MODO EMERGÊNCIA ATIVO: Funcionalidades limitadas</string>
+
+
+
 </resources>
