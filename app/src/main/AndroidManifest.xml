@@ -75,6 +75,10 @@
         <activity
             android:name=".ui.user.UserLogsActivity" />
 
+        <activity
+            android:name=".ui.camera.ViewerActivity"
+            android:exported="false" />
+        
         <receiver
             android:name=".receivers.ArmAlarmReceiver"
             android:exported="false">
