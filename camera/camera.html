@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Node</title>
+    <style>
+        body { font-family: sans-serif; padding: 16px; background: #111; color: #eee; }
+        #log { font-size: 12px; background: #222; padding: 8px; border-radius: 4px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; }
+        video { margin-top: 12px; border: 2px solid red; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h2>Camera Node</h2>
+    <p>Status: <span id="status">Idle (Aguardando Alarme)</span></p>
+    <video id="myVideo" autoplay muted playsinline style="width: 300px;"></video>
+    <pre id="log"></pre>
+
+    <script type="module">
+        import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push, onChildAdded, off }
+                                    from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey:      "AIzaSyCY4Hbw2Dhc7HbZovdG_uPPjkfECsMAS98",
+            databaseURL: "https://esp-project-adbef-default-rtdb.europe-west1.firebasedatabase.app/"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app);
+
+        const ALARM_UID  = "alarm_3076F5F04D70";
+        const statusEl   = document.getElementById('status');
+        const videoEl    = document.getElementById('myVideo');
+        const logEl      = document.getElementById('log');
+
+        function log(msg) {
+            const ts = new Date().toLocaleTimeString();
+            console.log(msg);
+            logEl.textContent += `[${ts}] ${msg}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // ── ICE / STUN + free TURN servers ──────────────────────────────────
+        const servers = {
+            iceServers: [
+                { urls: "stun:stun.relay.metered.ca:80" },
+                {
+                    urls:       "turn:global.relay.metered.ca:80",
+                    username:   "8925165006e017a481028666",
+                    credential: "agRZH6av4wFPruzm",
+                },
+                {
+                    urls:       "turn:global.relay.metered.ca:80?transport=tcp",
+                    username:   "8925165006e017a481028666",
+                    credential: "agRZH6av4wFPruzm",
+                },
+                {
+                    urls:       "turn:global.relay.metered.ca:443",
+                    username:   "8925165006e017a481028666",
+                    credential: "agRZH6av4wFPruzm",
+                },
+                {
+                    urls:       "turns:global.relay.metered.ca:443?transport=tcp",
+                    username:   "8925165006e017a481028666",
+                    credential: "agRZH6av4wFPruzm",
+                },
+            ]
+        };
+
+        let localStream = null;
+        let pc          = null;
+
+        // ── Firebase paths ───────────────────────────────────────────────────
+        const basePath              = `/alarms/${ALARM_UID}`;
+        const offerPath             = `${basePath}/webrtc/offer`;
+        const answerPath            = `${basePath}/webrtc/answer`;
+        const callerCandidatesPath  = `${basePath}/webrtc/callerCandidates`;
+        const viewerCandidatesPath  = `${basePath}/webrtc/viewerCandidates`;
+
+        // ── Watch alarm ──────────────────────────────────────────────────────
+        onValue(ref(db, `${basePath}/isFired`), async (snapshot) => {
+            if (snapshot.val() === true) {
+                statusEl.textContent = "🚨 ALARME DISPARADO! Iniciando câmera...";
+                log("Alarm fired — starting camera");
+                await startCamera();
+            } else {
+                statusEl.textContent = "Idle (Aguardando Alarme)";
+                log("Alarm cleared — stopping camera");
+                stopCamera();
+            }
+        });
+
+        // ── Start camera & WebRTC signalling ─────────────────────────────────
+        async function startCamera() {
+            if (pc) {
+                log("Already running — skipping startCamera()");
+                return;
+            }
+
+            // 1. Get local media
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            } catch (err) {
+                log(`❌ getUserMedia failed: ${err.message}`);
+                statusEl.textContent = "❌ Câmera não disponível";
+                return;
+            }
+            videoEl.srcObject = localStream;
+            log("Local stream acquired");
+
+            // 2. Create peer connection
+            pc = new RTCPeerConnection(servers);
+
+            pc.oniceconnectionstatechange = () => {
+                log(`ICE state: ${pc.iceConnectionState}`);
+                statusEl.textContent = `ICE: ${pc.iceConnectionState}`;
+            };
+            pc.onconnectionstatechange = () => {
+                log(`Connection state: ${pc.connectionState}`);
+            };
+            pc.onicegatheringstatechange = () => {
+                log(`ICE gathering: ${pc.iceGatheringState}`);
+            };
+
+            // 3. Add tracks
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+            // 4. Push own ICE candidates as they arrive
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    log(`Sending caller ICE candidate: ${event.candidate.type}`);
+                    push(ref(db, callerCandidatesPath), event.candidate.toJSON());
+                }
+            };
+
+            // 5. Create & set local offer
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            log("Offer created and set as local description");
+
+            // 6. Publish offer to Firebase
+            await set(ref(db, offerPath), { type: offer.type, sdp: offer.sdp });
+            log("Offer pushed to Firebase — waiting for viewer answer...");
+            statusEl.textContent = "📡 Offer enviado, a aguardar viewer...";
+
+            // ─────────────────────────────────────────────────────────────────
+            // IMPORTANT: Collect viewer ICE candidates into a queue.
+            //            We MUST NOT call addIceCandidate() before
+            //            setRemoteDescription() (the answer) is applied.
+            // ─────────────────────────────────────────────────────────────────
+            const pendingViewerCandidates = [];
+            let   remoteDescriptionSet    = false;
+
+            onChildAdded(ref(db, viewerCandidatesPath), (snapshot) => {
+                if (!snapshot.val()) return;
+                if (remoteDescriptionSet) {
+                    log("Adding viewer ICE candidate (live)");
+                    pc.addIceCandidate(new RTCIceCandidate(snapshot.val()))
+                      .catch(e => log(`addIceCandidate error: ${e.message}`));
+                } else {
+                    log("Queuing viewer ICE candidate (answer not yet applied)");
+                    pendingViewerCandidates.push(snapshot.val());
+                }
+            });
+
+            // 7. Listen for the viewer's answer — fire once
+            const answerRef = ref(db, answerPath);
+            const unsubAnswer = onValue(answerRef, async (snapshot) => {
+                if (!snapshot.val() || remoteDescriptionSet) return;
+                if (pc.signalingState === "stable") {
+                    log("Answer received but signalingState is already stable — ignoring");
+                    return;
+                }
+
+                log("Answer received from viewer — applying remote description");
+                try {
+                    await pc.setRemoteDescription(new RTCSessionDescription(snapshot.val()));
+                    remoteDescriptionSet = true;
+                    log("Remote description (answer) set ✅");
+
+                    // Drain the queued viewer ICE candidates now that it's safe
+                    for (const candidate of pendingViewerCandidates) {
+                        log("Adding queued viewer ICE candidate");
+                        await pc.addIceCandidate(new RTCIceCandidate(candidate))
+                                .catch(e => log(`addIceCandidate error: ${e.message}`));
+                    }
+                    pendingViewerCandidates.length = 0;
+
+                    // Unsubscribe — we only need the answer once
+                    off(answerRef, 'value', unsubAnswer);
+                } catch (err) {
+                    log(`❌ setRemoteDescription (answer) error: ${err.message}`);
+                }
+            });
+        }
+
+        // ── Stop camera & clean up ───────────────────────────────────────────
+        function stopCamera() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            if (pc) {
+                pc.close();
+                pc = null;
+            }
+            videoEl.srcObject = null;
+
+            // Wipe all WebRTC signalling data so next alarm starts fresh
+            set(ref(db, `${basePath}/webrtc`), null)
+                .then(() => log("WebRTC signalling data cleared"))
+                .catch(err => log(`Cleanup error: ${err.message}`));
+        }
+    </script>
+</body>
+</html>
