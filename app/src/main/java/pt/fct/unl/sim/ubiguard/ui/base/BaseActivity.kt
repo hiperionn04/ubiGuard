@@ -29,6 +29,7 @@ open class BaseActivity : AppCompatActivity() {
         val menuProfile = findViewById<TextView>(R.id.menuProfile)
         val menuAlarms = findViewById<TextView>(R.id.menuAlarms)
         val menuSensors = findViewById<TextView>(R.id.menuSensors)
+        val menuCamera = findViewById<TextView>(R.id.menuCamera)
         val menuLogs = findViewById<TextView>(R.id.menuLogs)
         val menuLogout = findViewById<TextView>(R.id.menuLogout)
 
@@ -93,6 +94,12 @@ open class BaseActivity : AppCompatActivity() {
                             }
                         }
                         menuAlarms.setOnClickListener(goToMain)
+
+                        menuCamera.setOnClickListener {
+                            startActivity(Intent(this,
+                                pt.fct.unl.sim.ubiguard.ui.camera.ViewerActivity::class.java))
+                            drawerLayout.closeDrawers()
+                        }
                     }
                 }
         }
