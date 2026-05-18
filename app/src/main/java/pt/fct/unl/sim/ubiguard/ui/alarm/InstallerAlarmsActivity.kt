@@ -19,7 +19,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import pt.fct.unl.sim.ubiguard.UbiGuardApp
 import com.google.firebase.database.ValueEventListener
 import pt.fct.unl.sim.ubiguard.R
 import pt.fct.unl.sim.ubiguard.adapters.AlarmAdapter
@@ -50,7 +49,7 @@ class InstallerAlarmsActivity : BaseActivity() {
         val ivMenuIcon = findViewById<ImageView>(R.id.ivMenuIcon)
         ativarSliderComponent(drawerLayout, ivMenuIcon)
 
-        database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
+        database = FirebaseDatabase.getInstance().reference
         rvAllAlarms = findViewById(R.id.rvAllAlarms)
         val progressBar = findViewById<ProgressBar>(R.id.progressBarAlarms)
         tvEmptyState = findViewById(R.id.tvEmptyState)

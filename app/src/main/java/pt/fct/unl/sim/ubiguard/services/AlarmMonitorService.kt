@@ -16,11 +16,10 @@ import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import pt.fct.unl.sim.ubiguard.R
-import pt.fct.unl.sim.ubiguard.UbiGuardApp
 
 class AlarmMonitorService : Service() {
 
-    private val database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
+    private val database = FirebaseDatabase.getInstance().reference
     private val auth = FirebaseAuth.getInstance()
 
     private val alarmListeners = mutableMapOf<String, ValueEventListener>()

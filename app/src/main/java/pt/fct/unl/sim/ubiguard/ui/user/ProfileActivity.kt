@@ -9,16 +9,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import pt.fct.unl.sim.ubiguard.UbiGuardApp
-import com.google.firebase.database.ValueEventListener
 import pt.fct.unl.sim.ubiguard.R
 import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
 
-// 1. Herda de BaseActivity
 class ProfileActivity : BaseActivity() {
 
     private lateinit var auth: FirebaseAuth
@@ -29,7 +24,7 @@ class ProfileActivity : BaseActivity() {
         setContentView(R.layout.activity_profile)
 
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
+        database = FirebaseDatabase.getInstance().reference
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val ivMenuIcon = findViewById<ImageView>(R.id.ivMenuIcon)
@@ -54,8 +49,8 @@ class ProfileActivity : BaseActivity() {
 
         tvProfileEmail.text = email ?: getString(R.string.error_no_email)
 
-        database.child("users").child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
+        database.child("users").child(userId).get()
+            .addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
                     val name = snapshot.child("name").getValue(String::class.java) ?: getString(R.string.general_unknown)
                     val accountType = snapshot.child("account_type").getValue(String::class.java) ?: "User"
@@ -66,15 +61,13 @@ class ProfileActivity : BaseActivity() {
                     progressBar.visibility = View.GONE
                     layoutContent.visibility = View.VISIBLE
                 } else {
-                    Toast.makeText(this@ProfileActivity, getString(R.string.error_profile_notfound), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.error_profile_notfound), Toast.LENGTH_SHORT).show()
                     finish()
                 }
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@ProfileActivity, getString(R.string.error_loading_profile), Toast.LENGTH_SHORT).show()
+            .addOnFailureListener {
+                Toast.makeText(this, getString(R.string.error_loading_profile), Toast.LENGTH_SHORT).show()
                 finish()
             }
-        })
     }
 }

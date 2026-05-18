@@ -25,7 +25,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import pt.fct.unl.sim.ubiguard.UbiGuardApp
 import com.google.firebase.database.ValueEventListener
 import pt.fct.unl.sim.ubiguard.R
 import pt.fct.unl.sim.ubiguard.ui.user.UserLogsActivity
@@ -52,7 +51,7 @@ class UserAlarmDetailsActivity : BaseActivity() {
         setContentView(R.layout.activity_user_alarm_details)
 
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
+        database = FirebaseDatabase.getInstance().reference
         alarmId = intent.getStringExtra("ALARM_ID")
 
         if (alarmId == null) {

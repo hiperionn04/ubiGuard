@@ -16,7 +16,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import pt.fct.unl.sim.ubiguard.UbiGuardApp
 import com.google.firebase.database.ValueEventListener
 import pt.fct.unl.sim.ubiguard.R
 import pt.fct.unl.sim.ubiguard.adapters.SensorAdapter
@@ -49,7 +48,7 @@ class InstallerSensorsActivity : BaseActivity() {
         sensorAdapter = SensorAdapter(sensorList)
         rvSensors.adapter = sensorAdapter
 
-        val database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
+        val database = FirebaseDatabase.getInstance().reference
 
         btnSearch.setOnClickListener {
             val alarmId = etAlarmId.text.toString().trim()

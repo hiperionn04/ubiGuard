@@ -11,7 +11,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import pt.fct.unl.sim.ubiguard.UbiGuardApp
 import com.google.firebase.database.ValueEventListener
 import pt.fct.unl.sim.ubiguard.ui.alarm.InstallerLogsActivity
 import pt.fct.unl.sim.ubiguard.ui.alarm.InstallerSensorsActivity
@@ -40,7 +39,7 @@ class AlarmDetailsActivity : BaseActivity() {
             return
         }
 
-        database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
+        database = FirebaseDatabase.getInstance().reference
 
         loadAlarmData()
         findOwnerData()

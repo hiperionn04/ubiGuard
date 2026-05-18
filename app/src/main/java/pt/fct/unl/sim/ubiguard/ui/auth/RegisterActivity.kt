@@ -11,7 +11,6 @@ import androidx.appcompat.widget.AppCompatButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import pt.fct.unl.sim.ubiguard.UbiGuardApp
 import pt.fct.unl.sim.ubiguard.R
 
 class RegisterActivity : AppCompatActivity() {
@@ -24,7 +23,7 @@ class RegisterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_register)
 
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
+        database = FirebaseDatabase.getInstance().reference
 
         val etRegName = findViewById<EditText>(R.id.etRegName)
         val etRegEmail = findViewById<EditText>(R.id.etRegEmail)
