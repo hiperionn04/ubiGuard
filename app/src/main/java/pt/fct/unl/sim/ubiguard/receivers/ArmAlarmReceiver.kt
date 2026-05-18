@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
+import pt.fct.unl.sim.ubiguard.UbiGuardApp
 
 class ArmAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -15,7 +16,7 @@ class ArmAlarmReceiver : BroadcastReceiver() {
 
         val pendingResult = goAsync()
 
-        val database = FirebaseDatabase.getInstance().reference
+        val database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
 
         database.child("alarms").child(alarmId).child("status").setValue("Armado")
             .addOnSuccessListener {

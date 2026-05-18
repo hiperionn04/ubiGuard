@@ -21,6 +21,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import pt.fct.unl.sim.ubiguard.UbiGuardApp
 import com.google.firebase.database.ValueEventListener
 import pt.fct.unl.sim.ubiguard.R
 import pt.fct.unl.sim.ubiguard.ui.alarm.UserAlarmDetailsActivity
@@ -46,7 +47,7 @@ class MainActivity : BaseActivity() {
         setContentView(R.layout.activity_main)
 
         auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance().reference
+        database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
         fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(this)
 
         val currentUser = auth.currentUser
@@ -57,6 +58,10 @@ class MainActivity : BaseActivity() {
         }
 
         val userId = currentUser.uid
+
+        database.child("users").child(userId).keepSynced(true)
+        database.child("users").child(userId).child("alarms").keepSynced(true)
+        database.child("alarms").keepSynced(true)
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val ivMenuIcon = findViewById<ImageView>(R.id.ivMenuIcon)

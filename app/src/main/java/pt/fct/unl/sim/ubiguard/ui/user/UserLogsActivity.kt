@@ -14,6 +14,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import pt.fct.unl.sim.ubiguard.UbiGuardApp
 import com.google.firebase.database.ValueEventListener
 import pt.fct.unl.sim.ubiguard.R
 import pt.fct.unl.sim.ubiguard.adapters.LogAdapter
@@ -57,7 +58,7 @@ class UserLogsActivity : BaseActivity() {
         logAdapter = LogAdapter(logList)
         rvLogs.adapter = logAdapter
 
-        database = FirebaseDatabase.getInstance().reference
+        database = FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference
 
         carregarLogs(isInitialLoad = true)
 

@@ -9,7 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import pt.fct.unl.sim.ubiguard.UbiGuardApp
 import pt.fct.unl.sim.ubiguard.ui.alarm.InstallerAlarmsActivity
 import pt.fct.unl.sim.ubiguard.ui.alarm.InstallerLogsActivity
 import pt.fct.unl.sim.ubiguard.ui.alarm.InstallerSensorsActivity
@@ -39,8 +43,9 @@ open class BaseActivity : AppCompatActivity() {
         iconeMenu.setOnClickListener { drawerLayout.openDrawer(GravityCompat.START) }
 
         if (user != null) {
-            FirebaseDatabase.getInstance().reference.child("users").child(user.uid).child("account_type").get()
-                .addOnSuccessListener { snapshot ->
+            FirebaseDatabase.getInstance(UbiGuardApp.DATABASE_URL).reference.child("users").child(user.uid).child("account_type")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
                     val accountType = snapshot.getValue(String::class.java) ?: "User"
 
                     if (accountType == "Installer") {
@@ -50,15 +55,15 @@ open class BaseActivity : AppCompatActivity() {
 
                         menuAlarms.setOnClickListener {
                             drawerLayout.closeDrawer(GravityCompat.START)
-                            if (this !is InstallerAlarmsActivity) {
-                                startActivity(Intent(this, InstallerAlarmsActivity::class.java))
+                            if (this@BaseActivity !is InstallerAlarmsActivity) {
+                                startActivity(Intent(this@BaseActivity, InstallerAlarmsActivity::class.java))
                             }
                         }
 
                         menuDashboard.setOnClickListener {
                             drawerLayout.closeDrawer(GravityCompat.START)
-                            if (this !is MainActivity) {
-                                val intent = Intent(this, MainActivity::class.java)
+                            if (this@BaseActivity !is MainActivity) {
+                                val intent = Intent(this@BaseActivity, MainActivity::class.java)
                                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 startActivity(intent)
                                 finish()
@@ -67,15 +72,15 @@ open class BaseActivity : AppCompatActivity() {
 
                         menuSensors.setOnClickListener {
                             drawerLayout.closeDrawer(GravityCompat.START)
-                            if (this !is InstallerSensorsActivity) {
-                                startActivity(Intent(this, InstallerSensorsActivity::class.java))
+                            if (this@BaseActivity !is InstallerSensorsActivity) {
+                                startActivity(Intent(this@BaseActivity, InstallerSensorsActivity::class.java))
                             }
                         }
 
                         menuLogs.setOnClickListener {
                             drawerLayout.closeDrawer(GravityCompat.START)
-                            if (this !is InstallerLogsActivity) {
-                                startActivity(Intent(this, InstallerLogsActivity::class.java))
+                            if (this@BaseActivity !is InstallerLogsActivity) {
+                                startActivity(Intent(this@BaseActivity, InstallerLogsActivity::class.java))
                             }
                         }
 
@@ -86,8 +91,8 @@ open class BaseActivity : AppCompatActivity() {
 
                         val goToMain = View.OnClickListener {
                             drawerLayout.closeDrawer(GravityCompat.START)
-                            if (this !is MainActivity) {
-                                val intent = Intent(this, MainActivity::class.java)
+                            if (this@BaseActivity !is MainActivity) {
+                                val intent = Intent(this@BaseActivity, MainActivity::class.java)
                                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                                 startActivity(intent)
                                 finish()
@@ -96,12 +101,15 @@ open class BaseActivity : AppCompatActivity() {
                         menuAlarms.setOnClickListener(goToMain)
 
                         menuCamera.setOnClickListener {
-                            startActivity(Intent(this,
+                            startActivity(Intent(this@BaseActivity,
                                 pt.fct.unl.sim.ubiguard.ui.camera.ViewerActivity::class.java))
                             drawerLayout.closeDrawers()
                         }
                     }
                 }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
         }
         
         val goToMain = View.OnClickListener {
