@@ -165,6 +165,7 @@ class AlarmMonitorService : Service() {
                     val viewerIntent = Intent(this@AlarmMonitorService,
                         pt.fct.unl.sim.ubiguard.ui.camera.ViewerActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra("ALARM_ID", alarmId)
                     }
                     val pendingIntent = android.app.PendingIntent.getActivity(
                         this@AlarmMonitorService,
