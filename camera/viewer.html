@@ -302,6 +302,11 @@
             btnStart.disabled = false;
         });
 
+        // to stop the stream if the user leaves the site
+        window.addEventListener('beforeunload', () => {
+            set(ref(db, paths.streamRequested), false);
+        });
+
         // ── WebRTC handshake ──────────────────────────────────────────────────
         async function connectToStream(offer) {
             if (pc) { pc.close(); pc = null; }
