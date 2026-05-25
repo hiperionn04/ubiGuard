@@ -161,6 +161,21 @@ class AlarmMonitorService : Service() {
                     val alarmName = snapshot.getValue(String::class.java) ?: getString(R.string.notification_unknown_alarm)
                     val bitmapLogo = android.graphics.BitmapFactory.decodeResource(applicationContext.resources, R.drawable.logo_ubiguard)
 
+                    // Open ViewerActivity when notification is tapped
+                    val viewerIntent = Intent(this@AlarmMonitorService,
+                        pt.fct.unl.sim.ubiguard.ui.camera.ViewerActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra("ALARM_ID", alarmId)
+                    }
+                    val pendingIntent = android.app.PendingIntent.getActivity(
+                        this@AlarmMonitorService,
+                        alarmId.hashCode(),
+                        viewerIntent,
+                        android.app.PendingIntent.FLAG_UPDATE_CURRENT or
+                                android.app.PendingIntent.FLAG_IMMUTABLE
+                    )
+
+
                     val notification = NotificationCompat.Builder(this@AlarmMonitorService, "UBIGUARD_ALARM")
                         .setContentTitle(getString(R.string.notification_alarm_triggered))
                         .setContentText(getString(R.string.notification_fire_alarm, alarmName))
@@ -168,6 +183,8 @@ class AlarmMonitorService : Service() {
                         .setLargeIcon(bitmapLogo)
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setDefaults(NotificationCompat.DEFAULT_ALL)
+                        .setContentIntent(pendingIntent)
+                        .setAutoCancel(true)
                         .build()
 
                     val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -176,7 +193,7 @@ class AlarmMonitorService : Service() {
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
-
+    
     private fun triggerInformativeNotification(alarmId: String, type: String, value: String) {
         database.child("alarms").child(alarmId).child("name")
             .addListenerForSingleValueEvent(object : ValueEventListener {
