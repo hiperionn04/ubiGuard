@@ -3,211 +3,257 @@
 <head>
     <title>Camera Node</title>
     <style>
-        body { font-family: sans-serif; padding: 16px; background: #111; color: #eee; }
-        #log { font-size: 12px; background: #222; padding: 8px; border-radius: 4px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; }
-        video { margin-top: 12px; border: 2px solid red; border-radius: 4px; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #222;
+        }
+        .dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #444;
+            transition: background 0.3s;
+        }
+        .dot.streaming { background: #48bb78; box-shadow: 0 0 6px #48bb7888; }
+        .dot.waiting   { background: #ed8933; box-shadow: 0 0 6px #ed893388; animation: pulse 1.4s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        h1 { font-size: 14px; font-weight: normal; letter-spacing: 0.1em; color: #888; text-transform: uppercase; }
+        .status-bar {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 16px;
+        }
+        .status-bar span { color: #e0e0e0; }
+        video {
+            width: 100%;
+            max-width: 480px;
+            border-radius: 6px;
+            border: 1px solid #222;
+            background: #111;
+            display: block;
+            margin-bottom: 16px;
+        }
+        #log {
+            font-size: 11px;
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            border-radius: 6px;
+            padding: 12px;
+            max-height: 220px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #555;
+            line-height: 1.6;
+        }
+        #log .ok   { color: #48bb78; }
+        #log .err  { color: #e53e3e; }
+        #log .info { color: #4299e1; }
+        #log .warn { color: #ed8933; }
     </style>
 </head>
 <body>
-    <h2>Camera Node</h2>
-    <p>Status: <span id="status">Idle (Aguardando Alarme)</span></p>
-    <video id="myVideo" autoplay muted playsinline style="width: 300px;"></video>
+
+    <header>
+        <div class="dot" id="dot"></div>
+        <h1>Camera Node — Smart Alarm</h1>
+    </header>
+
+    <div class="status-bar">State: <span id="statusText">Idle — awaiting alarm</span></div>
+
+    <video id="myVideo" autoplay muted playsinline></video>
     <pre id="log"></pre>
 
     <script type="module">
-        import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, onChildAdded, off }
-                                    from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+            from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+        import { getAuth, signInAnonymously }
+            from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
-        const firebaseConfig = {
+        const app = initializeApp({
             apiKey:      "AIzaSyCY4Hbw2Dhc7HbZovdG_uPPjkfECsMAS98",
-            databaseURL: "https://esp-project-adbef-default-rtdb.europe-west1.firebasedatabase.app/"
+            authDomain:  "esp-project-adbef.firebaseapp.com",
+            databaseURL: "https://esp-project-adbef-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId:   "esp-project-adbef",
+        });
+        const db   = getDatabase(app);
+        const auth = getAuth(app);
+
+        const ALARM_UID = "alarm_3076F5F04D70";
+        const basePath  = `/alarms/${ALARM_UID}`;
+
+        const paths = {
+            isFired:          `${basePath}/isFired`,
+            streamRequested:  `${basePath}/webrtc/streamRequested`,
+            offer:            `${basePath}/webrtc/offer`,
+            answer:           `${basePath}/webrtc/answer`,
+            callerCandidates: `${basePath}/webrtc/callerCandidates`,
+            viewerCandidates: `${basePath}/webrtc/viewerCandidates`,
         };
-        const app = initializeApp(firebaseConfig);
-        const db  = getDatabase(app);
 
-        const ALARM_UID  = "alarm_3076F5F04D70";
-        const statusEl   = document.getElementById('status');
-        const videoEl    = document.getElementById('myVideo');
-        const logEl      = document.getElementById('log');
-
-        function log(msg) {
-            const ts = new Date().toLocaleTimeString();
-            console.log(msg);
-            logEl.textContent += `[${ts}] ${msg}\n`;
-            logEl.scrollTop = logEl.scrollHeight;
-        }
-
-        // ── ICE / STUN + free TURN servers ──────────────────────────────────
-        const servers = {
+        const iceServers = {
             iceServers: [
                 { urls: "stun:stun.relay.metered.ca:80" },
-                {
-                    urls:       "turn:global.relay.metered.ca:80",
-                    username:   "8925165006e017a481028666",
-                    credential: "agRZH6av4wFPruzm",
-                },
-                {
-                    urls:       "turn:global.relay.metered.ca:80?transport=tcp",
-                    username:   "8925165006e017a481028666",
-                    credential: "agRZH6av4wFPruzm",
-                },
-                {
-                    urls:       "turn:global.relay.metered.ca:443",
-                    username:   "8925165006e017a481028666",
-                    credential: "agRZH6av4wFPruzm",
-                },
-                {
-                    urls:       "turns:global.relay.metered.ca:443?transport=tcp",
-                    username:   "8925165006e017a481028666",
-                    credential: "agRZH6av4wFPruzm",
-                },
+                { urls: "turn:global.relay.metered.ca:80",                username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turn:global.relay.metered.ca:80?transport=tcp",  username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turn:global.relay.metered.ca:443",               username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turns:global.relay.metered.ca:443?transport=tcp",username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
             ]
         };
 
+        const videoEl    = document.getElementById('myVideo');
+        const statusText = document.getElementById('statusText');
+        const dotEl      = document.getElementById('dot');
+        const logEl      = document.getElementById('log');
+
         let localStream = null;
         let pc          = null;
+        let alarmActive = false;
 
-        // ── Firebase paths ───────────────────────────────────────────────────
-        const basePath              = `/alarms/${ALARM_UID}`;
-        const offerPath             = `${basePath}/webrtc/offer`;
-        const answerPath            = `${basePath}/webrtc/answer`;
-        const callerCandidatesPath  = `${basePath}/webrtc/callerCandidates`;
-        const viewerCandidatesPath  = `${basePath}/webrtc/viewerCandidates`;
+        function log(msg, type = 'info') {
+            const ts   = new Date().toLocaleTimeString();
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = `[${ts}] ${msg}\n`;
+            logEl.appendChild(span);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
 
-        // ── Watch alarm ──────────────────────────────────────────────────────
-        onValue(ref(db, `${basePath}/isFired`), async (snapshot) => {
-            if (snapshot.val() === true) {
-                statusEl.textContent = "🚨 ALARME DISPARADO! Iniciando câmera...";
-                log("Alarm fired — starting camera");
-                await startCamera();
+        // ── Auth ─────────────────────────────────────────────────────────────
+        await signInAnonymously(auth);
+        log('Signed in anonymously ✅', 'ok');
+
+        // ── Watch isFired ────────────────────────────────────────────────────
+        // Camera doesn't start here — it only tracks the alarm state so it
+        // knows whether streamRequested is legitimate.
+        onValue(ref(db, paths.isFired), (snap) => {
+            alarmActive = snap.val() === true;
+            if (alarmActive) {
+                dotEl.className        = 'dot waiting';
+                statusText.textContent = 'Alarm active — waiting for viewer to open stream';
+                log('Alarm fired — standby for stream request', 'warn');
             } else {
-                statusEl.textContent = "Idle (Aguardando Alarme)";
-                log("Alarm cleared — stopping camera");
-                stopCamera();
+                dotEl.className        = 'dot';
+                statusText.textContent = 'Idle — awaiting alarm';
+                log('Alarm cleared — stopping stream', 'info');
+                stopAll();
             }
         });
 
-        // ── Start camera & WebRTC signalling ─────────────────────────────────
-        async function startCamera() {
-            if (pc) {
-                log("Already running — skipping startCamera()");
-                return;
+        // ── Watch streamRequested ────────────────────────────────────────────
+        onValue(ref(db, paths.streamRequested), async (snap) => {
+            if (snap.val() === true && alarmActive) {
+                log('Viewer opened stream — starting camera', 'ok');
+                dotEl.className        = 'dot streaming';
+                statusText.textContent = 'Streaming live';
+                await startWebRTC();
+            } else if (!snap.val() && pc) {
+                log('Stream closed by viewer', 'warn');
+                stopWebRTC();
+                if (alarmActive) {
+                    dotEl.className        = 'dot waiting';
+                    statusText.textContent = 'Alarm active — waiting for viewer to open stream';
+                }
             }
+        });
 
-            // 1. Get local media
+        // ── Start WebRTC ─────────────────────────────────────────────────────
+        async function startWebRTC() {
+            if (pc) { log('Already streaming — skipping', 'warn'); return; }
+
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             } catch (err) {
-                log(`❌ getUserMedia failed: ${err.message}`);
-                statusEl.textContent = "❌ Câmera não disponível";
+                log(`Camera access failed: ${err.message}`, 'err');
                 return;
             }
+
             videoEl.srcObject = localStream;
-            log("Local stream acquired");
+            log('Local stream acquired', 'ok');
 
-            // 2. Create peer connection
-            pc = new RTCPeerConnection(servers);
+            pc = new RTCPeerConnection(iceServers);
+            pc.oniceconnectionstatechange = () => log(`ICE: ${pc.iceConnectionState}`, 'info');
+            pc.onconnectionstatechange    = () => log(`Connection: ${pc.connectionState}`, 'info');
 
-            pc.oniceconnectionstatechange = () => {
-                log(`ICE state: ${pc.iceConnectionState}`);
-                statusEl.textContent = `ICE: ${pc.iceConnectionState}`;
-            };
-            pc.onconnectionstatechange = () => {
-                log(`Connection state: ${pc.connectionState}`);
-            };
-            pc.onicegatheringstatechange = () => {
-                log(`ICE gathering: ${pc.iceGatheringState}`);
-            };
-
-            // 3. Add tracks
             localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-            // 4. Push own ICE candidates as they arrive
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
-                    log(`Sending caller ICE candidate: ${event.candidate.type}`);
-                    push(ref(db, callerCandidatesPath), event.candidate.toJSON());
+                    push(ref(db, paths.callerCandidates), event.candidate.toJSON());
+                    log(`ICE candidate sent: ${event.candidate.type}`, 'info');
                 }
             };
 
-            // 5. Create & set local offer
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
-            log("Offer created and set as local description");
+            await set(ref(db, paths.offer), { type: offer.type, sdp: offer.sdp });
+            log('Offer pushed — awaiting viewer answer...', 'info');
 
-            // 6. Publish offer to Firebase
-            await set(ref(db, offerPath), { type: offer.type, sdp: offer.sdp });
-            log("Offer pushed to Firebase — waiting for viewer answer...");
-            statusEl.textContent = "📡 Offer enviado, a aguardar viewer...";
+            const pendingCandidates    = [];
+            let   remoteDescriptionSet = false;
 
-            // ─────────────────────────────────────────────────────────────────
-            // IMPORTANT: Collect viewer ICE candidates into a queue.
-            //            We MUST NOT call addIceCandidate() before
-            //            setRemoteDescription() (the answer) is applied.
-            // ─────────────────────────────────────────────────────────────────
-            const pendingViewerCandidates = [];
-            let   remoteDescriptionSet    = false;
-
-            onChildAdded(ref(db, viewerCandidatesPath), (snapshot) => {
-                if (!snapshot.val()) return;
+            onChildAdded(ref(db, paths.viewerCandidates), (snap) => {
+                if (!snap.val()) return;
                 if (remoteDescriptionSet) {
-                    log("Adding viewer ICE candidate (live)");
-                    pc.addIceCandidate(new RTCIceCandidate(snapshot.val()))
-                      .catch(e => log(`addIceCandidate error: ${e.message}`));
+                    pc.addIceCandidate(new RTCIceCandidate(snap.val()))
+                      .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
                 } else {
-                    log("Queuing viewer ICE candidate (answer not yet applied)");
-                    pendingViewerCandidates.push(snapshot.val());
+                    pendingCandidates.push(snap.val());
+                    log('Queued viewer ICE candidate', 'info');
                 }
             });
 
-            // 7. Listen for the viewer's answer — fire once
-            const answerRef = ref(db, answerPath);
-            const unsubAnswer = onValue(answerRef, async (snapshot) => {
-                if (!snapshot.val() || remoteDescriptionSet) return;
-                if (pc.signalingState === "stable") {
-                    log("Answer received but signalingState is already stable — ignoring");
-                    return;
-                }
-
-                log("Answer received from viewer — applying remote description");
+            const answerRef   = ref(db, paths.answer);
+            const unsubAnswer = onValue(answerRef, async (snap) => {
+                if (!snap.val() || remoteDescriptionSet) return;
+                if (pc.signalingState === 'stable') { log('Already stable — ignoring answer', 'warn'); return; }
                 try {
-                    await pc.setRemoteDescription(new RTCSessionDescription(snapshot.val()));
+                    await pc.setRemoteDescription(new RTCSessionDescription(snap.val()));
                     remoteDescriptionSet = true;
-                    log("Remote description (answer) set ✅");
-
-                    // Drain the queued viewer ICE candidates now that it's safe
-                    for (const candidate of pendingViewerCandidates) {
-                        log("Adding queued viewer ICE candidate");
-                        await pc.addIceCandidate(new RTCIceCandidate(candidate))
-                                .catch(e => log(`addIceCandidate error: ${e.message}`));
+                    log('Remote description set ✅', 'ok');
+                    for (const c of pendingCandidates) {
+                        await pc.addIceCandidate(new RTCIceCandidate(c))
+                                .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
                     }
-                    pendingViewerCandidates.length = 0;
-
-                    // Unsubscribe — we only need the answer once
+                    pendingCandidates.length = 0;
                     off(answerRef, 'value', unsubAnswer);
                 } catch (err) {
-                    log(`❌ setRemoteDescription (answer) error: ${err.message}`);
+                    log(`setRemoteDescription error: ${err.message}`, 'err');
                 }
             });
         }
 
-        // ── Stop camera & clean up ───────────────────────────────────────────
-        function stopCamera() {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            if (pc) {
-                pc.close();
-                pc = null;
-            }
+        // ── Stop WebRTC signalling only ───────────────────────────────────────
+        function stopWebRTC() {
+            if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+            if (pc)          { pc.close(); pc = null; }
             videoEl.srcObject = null;
+            set(ref(db, `${basePath}/webrtc/offer`),            null);
+            set(ref(db, `${basePath}/webrtc/answer`),           null);
+            set(ref(db, `${basePath}/webrtc/callerCandidates`), null);
+            set(ref(db, `${basePath}/webrtc/viewerCandidates`), null);
+            log('WebRTC stopped and signalling cleared', 'info');
+        }
 
-            // Wipe all WebRTC signalling data so next alarm starts fresh
-            set(ref(db, `${basePath}/webrtc`), null)
-                .then(() => log("WebRTC signalling data cleared"))
-                .catch(err => log(`Cleanup error: ${err.message}`));
+        // ── Stop everything (alarm cleared) ──────────────────────────────────
+        function stopAll() {
+            stopWebRTC();
+            set(ref(db, paths.streamRequested), null);
         }
     </script>
 </body>
