@@ -189,8 +189,6 @@ class AlarmMonitorService : Service() {
 
                     val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                     manager.notify(alarmId.hashCode(), notification)
-
-                    startActivity(viewerIntent)
                 }
                 override fun onCancelled(error: DatabaseError) {}
             })
