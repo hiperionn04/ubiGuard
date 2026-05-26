@@ -360,8 +360,8 @@
 
         const tokenRef = ref(db, `${basePath}/webrtc/access_token`);
 
-        onValue(ref(db, paths.isFired), (snap) => {
-            const dbToken = snap.val();
+        onValue(ref(db, `${basePath}/webrtc/access_token`), (tokenSnap) => {
+            const dbToken = tokenSnap.val();
 
             if (!dbToken || dbToken !== URL_TOKEN) {
                 log('ACESSO NEGADO: Token inválido ou expirado.', 'err');
@@ -392,7 +392,7 @@
         });
 
         onValue(ref(db, paths.offer), (snap) => {
-            const offer = tokenSnap.val();
+            const offer = snap.val();
             if (!offer) return;
             if (pc && (pc.signalingState === 'stable' || pc.connectionState === 'connected')) {
                 log('Already connected — ignoring duplicate offer', 'warn');
