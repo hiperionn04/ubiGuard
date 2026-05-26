@@ -392,7 +392,7 @@
         });
 
         onValue(ref(db, paths.offer), (snap) => {
-            const offer = snap.val();
+            const offer = tokenSnap.val();
             if (!offer) return;
             if (pc && (pc.signalingState === 'stable' || pc.connectionState === 'connected')) {
                 log('Already connected — ignoring duplicate offer', 'warn');
