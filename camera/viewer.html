@@ -360,8 +360,8 @@
 
         const tokenRef = ref(db, `${basePath}/webrtc/access_token`);
 
-        onValue(ref(db, paths.isFired), (snap) => {
-            const dbToken = snap.val();
+        onValue(ref(db, `${basePath}/webrtc/access_token`), (tokenSnap) => {
+            const dbToken = tokenSnap.val();
 
             if (!dbToken || dbToken !== URL_TOKEN) {
                 log('ACESSO NEGADO: Token inválido ou expirado.', 'err');

@@ -210,19 +210,24 @@
         });
 
         onValue(ref(db, paths.streamRequested), async (snap) => {
-            if (snap.val() === true && alarmActive) {
-                log('Viewer opened stream — starting camera', 'ok');
-                dotEl.className = 'dot streaming';
-                statusText.textContent = 'Streaming live';
-                await startWebRTC();
-            } else if (!snap.val() && pc) {
-                log('Stream closed by viewer', 'warn');
-                stopWebRTC();
+             if (snap.val() !== true) {
+                if (pc) stopWebRTC();
                 if (alarmActive) {
                     dotEl.className = 'dot waiting';
                     statusText.textContent = 'Alarm active — waiting for viewer to open stream';
                 }
+                return;
             }
+        
+            if (!alarmActive) {
+                log('Stream requested but alarm not active — ignoring', 'warn');
+                return;
+            }
+        
+            log('Viewer opened stream — starting camera', 'ok');
+            dotEl.className = 'dot streaming';
+            statusText.textContent = 'Streaming live';
+            await startWebRTC();
         });
 
         async function startWebRTC() {
