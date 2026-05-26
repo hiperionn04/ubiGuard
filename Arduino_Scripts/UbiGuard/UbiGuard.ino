@@ -316,6 +316,11 @@ void setup() {
   setenv("TZ", "WET0WEST,M3.5.0/1,M10.5.0", 1);
   tzset();
 
+  config.timeout.serverResponse = 10 * 1000;      
+  fbdo.setBSSLBufferSize(4096, 1024);
+  streamFbdo.setBSSLBufferSize(4096, 1024);
+  fbdo.setResponseSize(1024);
+
   // CONFIGURAR FIREBASE
   config.api_key = FIREBASE_API_KEY;
   config.database_url = FIREBASE_DATABASE_URL;
