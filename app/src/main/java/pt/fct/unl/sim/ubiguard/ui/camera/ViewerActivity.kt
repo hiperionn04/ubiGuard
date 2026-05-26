@@ -6,7 +6,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.widget.ImageView
 import androidx.drawerlayout.widget.DrawerLayout
-import com.android.identity.util.UUID
+import java.util.UUID
 import com.google.firebase.database.FirebaseDatabase
 import pt.fct.unl.sim.ubiguard.R
 import pt.fct.unl.sim.ubiguard.ui.base.BaseActivity
@@ -45,14 +45,15 @@ class ViewerActivity : BaseActivity() {
         val dbRef =
             FirebaseDatabase.getInstance().getReference("alarms/$alarmId/webrtc/access_token")
         dbRef.setValue(tempToken).addOnCompleteListener {
+            FirebaseDatabase.getInstance().getReference("alarms/$alarmId/webrtc/streamRequested").setValue(true)
             val urlComSeguranca =
                 "https://hiperionn04.github.io/ubiGuard/camera/viewer.html?alarmId=$alarmId&token=$tempToken"
             webView.loadUrl(urlComSeguranca)
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         if (alarmId.isNotEmpty()) {
             val db = FirebaseDatabase.getInstance()
             db.getReference("alarms/$alarmId/webrtc/streamRequested").setValue(false)
