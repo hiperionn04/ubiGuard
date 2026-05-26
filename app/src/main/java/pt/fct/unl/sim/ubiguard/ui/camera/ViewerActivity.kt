@@ -45,7 +45,6 @@ class ViewerActivity : BaseActivity() {
         val dbRef =
             FirebaseDatabase.getInstance().getReference("alarms/$alarmId/webrtc/access_token")
         dbRef.setValue(tempToken).addOnCompleteListener {
-            FirebaseDatabase.getInstance().getReference("alarms/$alarmId/webrtc/streamRequested").setValue(true)
             val urlComSeguranca =
                 "https://hiperionn04.github.io/ubiGuard/camera/viewer.html?alarmId=$alarmId&token=$tempToken"
             webView.loadUrl(urlComSeguranca)

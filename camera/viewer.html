@@ -159,7 +159,6 @@
             line-height: 1.7;
         }
 
-        /* ── Buttons ── */
         .actions {
             display: flex;
             gap: 10px;
@@ -213,7 +212,6 @@
             border-color: #e53e3eaa;
         }
 
-        /* ── Log ── */
         #log {
             font-size: 11px;
             background: #0d0d0d;
@@ -286,7 +284,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, onChildAdded }
+        import { getDatabase, ref, set, onValue, push, onChildAdded, get } // Adicionado o método 'get'
             from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
         import { getAuth, signInAnonymously }
             from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
@@ -360,42 +358,31 @@
 
         const tokenRef = ref(db, `${basePath}/webrtc/access_token`);
 
-        onValue(ref(db, `${basePath}/webrtc/access_token`), (tokenSnap) => {
-            const dbToken = tokenSnap.val();
+        get(tokenRef).then((snap) => {
+            const dbToken = snap.val();
 
             if (!dbToken || dbToken !== URL_TOKEN) {
-                log('ACESSO NEGADO: Token inválido ou expirado.', 'err');
+                log('ACESSO NEGADO: Token inválido.', 'err');
                 statusText.textContent = 'Acesso Bloqueado';
                 dotEl.className = 'dot';
                 stopWebRTC();
                 showOnly('blocked');
-
-                document.getElementById('blockedScreen').innerHTML = '<div class="lock">🔒</div>Unauthorized Access.';
+                document.getElementById('blockedScreen').innerHTML = '<div class="lock">🔒</div>Acesso não autorizado (Token inválido).';
                 return;
             }
 
             log('Acesso autorizado! Token válido.', 'ok');
+
             iniciarLogicaDoAlarme();
 
-            if (snap.val() === true) {
-                dotEl.className = 'dot alarm';
-                statusText.textContent = 'Alarm active — stream available';
-                log('Alarm fired', 'warn');
-                showOnly('prompt');
-            } else {
-                dotEl.className = 'dot';
-                statusText.textContent = 'No active alarm';
-                log('Alarm cleared — blocking access', 'info');
-                stopWebRTC();
-                showOnly('blocked');
-            }
+        }).catch(err => {
+            log('Erro ao validar credenciais: ' + err.message, 'err');
         });
 
         onValue(ref(db, paths.offer), (snap) => {
             const offer = snap.val();
             if (!offer) return;
             if (pc && (pc.signalingState === 'stable' || pc.connectionState === 'connected')) {
-                log('Already connected — ignoring duplicate offer', 'warn');
                 return;
             }
             log('Offer received — completing handshake', 'info');
@@ -457,13 +444,10 @@
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
                     push(ref(db, paths.viewerCandidates), event.candidate.toJSON());
-                    log(`Viewer ICE candidate sent: ${event.candidate.type}`, 'info');
                 }
             };
 
             await pc.setRemoteDescription(new RTCSessionDescription(offer));
-            log('Remote description (offer) set', 'ok');
-
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             await set(ref(db, paths.answer), { type: answer.type, sdp: answer.sdp });
@@ -472,7 +456,7 @@
             onChildAdded(ref(db, paths.callerCandidates), (snap) => {
                 if (!snap.val()) return;
                 pc.addIceCandidate(new RTCIceCandidate(snap.val()))
-                    .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
+                    .catch(() => { });
             });
         }
 
