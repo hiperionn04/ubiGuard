@@ -210,18 +210,22 @@
 
         onValue(ref(db, paths.streamRequested), async (snap) => {
              if (snap.val() !== true) {
-                if (pc) { stopWebRTC(); ... }
+                if (pc) stopWebRTC();
+                if (alarmActive) {
+                    dotEl.className = 'dot waiting';
+                    statusText.textContent = 'Alarm active — waiting for viewer to open stream';
+                }
                 return;
             }
         
-            // Read isFired fresh instead of trusting the variable
-            const isFiredSnap = await get(ref(db, paths.isFired));
-            if (!isFiredSnap.val()) {
+            if (!alarmActive) {
                 log('Stream requested but alarm not active — ignoring', 'warn');
                 return;
             }
         
             log('Viewer opened stream — starting camera', 'ok');
+            dotEl.className = 'dot streaming';
+            statusText.textContent = 'Streaming live';
             await startWebRTC();
         });
 
