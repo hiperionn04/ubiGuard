@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Viewer Node</title>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Courier New', monospace;
             background: #0a0a0a;
@@ -11,6 +19,7 @@
             min-height: 100vh;
             padding: 24px;
         }
+
         header {
             display: flex;
             align-items: center;
@@ -19,16 +28,45 @@
             padding-bottom: 16px;
             border-bottom: 1px solid #222;
         }
+
         .dot {
-            width: 10px; height: 10px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: #444;
             transition: background 0.4s;
         }
-        .dot.alarm { background: #e53e3e; box-shadow: 0 0 8px #e53e3e99; animation: pulse 1.2s infinite; }
-        .dot.live  { background: #48bb78; box-shadow: 0 0 6px #48bb7888; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        h1 { font-size: 14px; font-weight: normal; letter-spacing: 0.1em; color: #888; text-transform: uppercase; }
+
+        .dot.alarm {
+            background: #e53e3e;
+            box-shadow: 0 0 8px #e53e3e99;
+            animation: pulse 1.2s infinite;
+        }
+
+        .dot.live {
+            background: #48bb78;
+            box-shadow: 0 0 6px #48bb7888;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.4
+            }
+        }
+
+        h1 {
+            font-size: 14px;
+            font-weight: normal;
+            letter-spacing: 0.1em;
+            color: #888;
+            text-transform: uppercase;
+        }
 
         .status-bar {
             background: #111;
@@ -39,9 +77,11 @@
             color: #aaa;
             margin-bottom: 20px;
         }
-        .status-bar span { color: #e0e0e0; }
 
-        /* ── Blocked screen (shown when alarm is NOT active) ── */
+        .status-bar span {
+            color: #e0e0e0;
+        }
+
         #blockedScreen {
             background: #111;
             border: 1px solid #2a2a2a;
@@ -52,9 +92,12 @@
             font-size: 13px;
             margin-bottom: 16px;
         }
-        #blockedScreen .lock { font-size: 28px; margin-bottom: 12px; }
 
-        /* ── Live panel ── */
+        #blockedScreen .lock {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
         #livePanel {
             display: none;
             background: #111;
@@ -63,6 +106,7 @@
             overflow: hidden;
             margin-bottom: 16px;
         }
+
         .panel-header {
             padding: 10px 16px;
             font-size: 11px;
@@ -74,8 +118,22 @@
             align-items: center;
             justify-content: space-between;
         }
-        .live-label { display: inline-flex; align-items: center; gap: 6px; color: #48bb78; font-size: 11px; }
-        .alarm-label { display: inline-flex; align-items: center; gap: 6px; color: #e53e3e; font-size: 11px; }
+
+        .live-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #48bb78;
+            font-size: 11px;
+        }
+
+        .alarm-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #e53e3e;
+            font-size: 11px;
+        }
 
         video {
             width: 100%;
@@ -84,7 +142,6 @@
             max-height: 400px;
         }
 
-        /* ── Alarm prompt (shown when alarm fires but stream not started) ── */
         #alarmPrompt {
             display: none;
             background: #111;
@@ -94,10 +151,22 @@
             margin-bottom: 16px;
             text-align: center;
         }
-        #alarmPrompt p { color: #aaa; font-size: 13px; margin-bottom: 20px; line-height: 1.7; }
+
+        #alarmPrompt p {
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
 
         /* ── Buttons ── */
-        .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         button {
             padding: 10px 24px;
             border-radius: 5px;
@@ -110,12 +179,39 @@
             color: #aaa;
             transition: all 0.15s;
         }
-        button:hover:not(:disabled) { background: #1a1a1a; color: #e0e0e0; border-color: #444; }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
-        #btnStartStream { border-color: #48bb7855; color: #48bb78; background: #48bb7808; }
-        #btnStartStream:hover:not(:disabled) { background: #48bb7818; border-color: #48bb78aa; }
-        #btnStopStream  { border-color: #e53e3e55; color: #e53e3e;  background: #e53e3e08; }
-        #btnStopStream:hover:not(:disabled)  { background: #e53e3e18; border-color: #e53e3eaa; }
+
+        button:hover:not(:disabled) {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #btnStartStream {
+            border-color: #48bb7855;
+            color: #48bb78;
+            background: #48bb7808;
+        }
+
+        #btnStartStream:hover:not(:disabled) {
+            background: #48bb7818;
+            border-color: #48bb78aa;
+        }
+
+        #btnStopStream {
+            border-color: #e53e3e55;
+            color: #e53e3e;
+            background: #e53e3e08;
+        }
+
+        #btnStopStream:hover:not(:disabled) {
+            background: #e53e3e18;
+            border-color: #e53e3eaa;
+        }
 
         /* ── Log ── */
         #log {
@@ -130,12 +226,25 @@
             color: #555;
             line-height: 1.6;
         }
-        #log .ok   { color: #48bb78; }
-        #log .err  { color: #e53e3e; }
-        #log .info { color: #4299e1; }
-        #log .warn { color: #ed8933; }
+
+        #log .ok {
+            color: #48bb78;
+        }
+
+        #log .err {
+            color: #e53e3e;
+        }
+
+        #log .info {
+            color: #4299e1;
+        }
+
+        #log .warn {
+            color: #ed8933;
+        }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -145,13 +254,11 @@
 
     <div class="status-bar">State: <span id="statusText">Connecting...</span></div>
 
-    <!-- Shown when no alarm is active — user cannot access stream -->
     <div id="blockedScreen">
         <div class="lock">🔒</div>
         No active alarm. Stream is unavailable.
     </div>
 
-    <!-- Shown when alarm fires but user hasn't opened stream yet -->
     <div id="alarmPrompt">
         <div class="panel-header" style="border:none; padding:0; margin-bottom:16px; justify-content:center;">
             <span class="alarm-label">⬤ &nbsp;Alarm triggered</span>
@@ -162,7 +269,6 @@
         </div>
     </div>
 
-    <!-- Shown when stream is active -->
     <div id="livePanel">
         <div class="panel-header">
             <span class="live-label">⬤ &nbsp;Live</span>
@@ -186,23 +292,24 @@
             from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
         const app = initializeApp({
-            apiKey:      "AIzaSyCY4Hbw2Dhc7HbZovdG_uPPjkfECsMAS98",
-            authDomain:  "esp-project-adbef.firebaseapp.com",
+            apiKey: "AIzaSyCY4Hbw2Dhc7HbZovdG_uPPjkfECsMAS98",
+            authDomain: "esp-project-adbef.firebaseapp.com",
             databaseURL: "https://esp-project-adbef-default-rtdb.europe-west1.firebasedatabase.app/",
-            projectId:   "esp-project-adbef",
+            projectId: "esp-project-adbef",
         });
-        const db   = getDatabase(app);
+        const db = getDatabase(app);
         const auth = getAuth(app);
 
-        const params   = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(window.location.search);
         const ALARM_UID = params.get('alarmId');
-        const basePath  = `/alarms/${ALARM_UID}`;
+        const URL_TOKEN = params.get('token');
+        const basePath = `/alarms/${ALARM_UID}`;
 
         const paths = {
-            isFired:          `${basePath}/isFired`,
-            streamRequested:  `${basePath}/webrtc/streamRequested`,
-            offer:            `${basePath}/webrtc/offer`,
-            answer:           `${basePath}/webrtc/answer`,
+            isFired: `${basePath}/isFired`,
+            streamRequested: `${basePath}/webrtc/streamRequested`,
+            offer: `${basePath}/webrtc/offer`,
+            answer: `${basePath}/webrtc/answer`,
             callerCandidates: `${basePath}/webrtc/callerCandidates`,
             viewerCandidates: `${basePath}/webrtc/viewerCandidates`,
         };
@@ -210,28 +317,28 @@
         const iceServers = {
             iceServers: [
                 { urls: "stun:stun.relay.metered.ca:80" },
-                { urls: "turn:global.relay.metered.ca:80",                username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
-                { urls: "turn:global.relay.metered.ca:80?transport=tcp",  username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
-                { urls: "turn:global.relay.metered.ca:443",               username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
-                { urls: "turns:global.relay.metered.ca:443?transport=tcp",username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turn:global.relay.metered.ca:80", username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turn:global.relay.metered.ca:443", username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
             ]
         };
 
-        const statusText    = document.getElementById('statusText');
-        const dotEl         = document.getElementById('dot');
+        const statusText = document.getElementById('statusText');
+        const dotEl = document.getElementById('dot');
         const blockedScreen = document.getElementById('blockedScreen');
-        const alarmPrompt   = document.getElementById('alarmPrompt');
-        const livePanel     = document.getElementById('livePanel');
-        const remoteVideo   = document.getElementById('remoteVideo');
-        const iceStatus     = document.getElementById('iceStatus');
-        const btnStart      = document.getElementById('btnStartStream');
-        const btnStop       = document.getElementById('btnStopStream');
-        const logEl         = document.getElementById('log');
+        const alarmPrompt = document.getElementById('alarmPrompt');
+        const livePanel = document.getElementById('livePanel');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const iceStatus = document.getElementById('iceStatus');
+        const btnStart = document.getElementById('btnStartStream');
+        const btnStop = document.getElementById('btnStopStream');
+        const logEl = document.getElementById('log');
 
         let pc = null;
 
         function log(msg, type = 'info') {
-            const ts   = new Date().toLocaleTimeString();
+            const ts = new Date().toLocaleTimeString();
             const span = document.createElement('span');
             span.className = type;
             span.textContent = `[${ts}] ${msg}\n`;
@@ -241,34 +348,49 @@
 
         function showOnly(screenId) {
             blockedScreen.style.display = 'none';
-            alarmPrompt.style.display   = 'none';
-            livePanel.style.display     = 'none';
+            alarmPrompt.style.display = 'none';
+            livePanel.style.display = 'none';
             if (screenId === 'blocked') blockedScreen.style.display = 'block';
-            if (screenId === 'prompt')  alarmPrompt.style.display   = 'block';
-            if (screenId === 'live')    livePanel.style.display      = 'block';
+            if (screenId === 'prompt') alarmPrompt.style.display = 'block';
+            if (screenId === 'live') livePanel.style.display = 'block';
         }
 
-        // ── Auth ─────────────────────────────────────────────────────────────
         await signInAnonymously(auth);
         log('Signed in anonymously ✅', 'ok');
 
-        // ── Watch isFired ────────────────────────────────────────────────────
+        const tokenRef = ref(db, `${basePath}/webrtc/access_token`);
+
         onValue(ref(db, paths.isFired), (snap) => {
+            const dbToken = snap.val();
+
+            if (!dbToken || dbToken !== URL_TOKEN) {
+                log('ACESSO NEGADO: Token inválido ou expirado.', 'err');
+                statusText.textContent = 'Acesso Bloqueado';
+                dotEl.className = 'dot';
+                stopWebRTC();
+                showOnly('blocked');
+
+                document.getElementById('blockedScreen').innerHTML = '<div class="lock">🔒</div>Unauthorized Access.';
+                return;
+            }
+
+            log('Acesso autorizado! Token válido.', 'ok');
+            iniciarLogicaDoAlarme();
+
             if (snap.val() === true) {
-                dotEl.className        = 'dot alarm';
+                dotEl.className = 'dot alarm';
                 statusText.textContent = 'Alarm active — stream available';
                 log('Alarm fired', 'warn');
-                showOnly('prompt'); // show the "open stream?" prompt, not the stream itself
+                showOnly('prompt');
             } else {
-                dotEl.className        = 'dot';
+                dotEl.className = 'dot';
                 statusText.textContent = 'No active alarm';
                 log('Alarm cleared — blocking access', 'info');
                 stopWebRTC();
-                showOnly('blocked'); // lock the viewer completely
+                showOnly('blocked');
             }
         });
 
-        // ── Watch offer (camera started streaming) ────────────────────────────
         onValue(ref(db, paths.offer), (snap) => {
             const offer = snap.val();
             if (!offer) return;
@@ -280,35 +402,28 @@
             connectToStream(offer).catch(err => log(`connectToStream error: ${err.message}`, 'err'));
         });
 
-        // ── Button: open stream ───────────────────────────────────────────────
         btnStart.addEventListener('click', async () => {
-            btnStart.disabled          = true;
-            statusText.textContent     = 'Requesting stream...';
+            btnStart.disabled = true;
+            statusText.textContent = 'Requesting stream...';
             log('Opening live stream', 'info');
-            // Signal the camera to start — it will push an offer which
-            // the onValue(offerPath) listener above will pick up.
             await set(ref(db, paths.streamRequested), true);
-            showOnly('live'); // switch UI immediately; video appears when track arrives
+            showOnly('live');
         });
 
-        // ── Button: stop stream ───────────────────────────────────────────────
         btnStop.addEventListener('click', async () => {
             log('User closed stream', 'warn');
             await set(ref(db, paths.streamRequested), false);
             stopWebRTC();
-            // Go back to the alarm prompt — alarm is still active
-            dotEl.className        = 'dot alarm';
+            dotEl.className = 'dot alarm';
             statusText.textContent = 'Alarm active — stream available';
             showOnly('prompt');
             btnStart.disabled = false;
         });
 
-        // to stop the stream if the user leaves the site
         window.addEventListener('beforeunload', () => {
             set(ref(db, paths.streamRequested), false);
         });
 
-        // ── WebRTC handshake ──────────────────────────────────────────────────
         async function connectToStream(offer) {
             if (pc) { pc.close(); pc = null; }
 
@@ -320,7 +435,7 @@
                     remoteVideo.srcObject = event.streams[0];
                     remoteVideo.play()
                         .then(() => {
-                            dotEl.className        = 'dot live';
+                            dotEl.className = 'dot live';
                             statusText.textContent = 'Live stream active';
                             log('Video playing ✅', 'ok');
                         })
@@ -335,7 +450,7 @@
                 const s = pc.iceConnectionState;
                 iceStatus.textContent = s;
                 log(`ICE: ${s}`, 'info');
-                if (s === 'failed')       statusText.textContent = 'ICE failed — check network';
+                if (s === 'failed') statusText.textContent = 'ICE failed — check network';
                 if (s === 'disconnected') statusText.textContent = 'Stream disconnected';
             };
 
@@ -357,17 +472,35 @@
             onChildAdded(ref(db, paths.callerCandidates), (snap) => {
                 if (!snap.val()) return;
                 pc.addIceCandidate(new RTCIceCandidate(snap.val()))
-                  .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
+                    .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
             });
         }
 
-        // ── Stop WebRTC ───────────────────────────────────────────────────────
         function stopWebRTC() {
             if (pc) { pc.close(); pc = null; }
             remoteVideo.srcObject = null;
             iceStatus.textContent = 'connecting...';
-            btnStart.disabled     = false;
+            btnStart.disabled = false;
+        }
+
+        function iniciarLogicaDoAlarme() {
+            onValue(ref(db, paths.isFired), (snap) => {
+                if (snap.val() === true) {
+                    dotEl.className = 'dot alarm';
+                    statusText.textContent = 'Alarm active — stream available';
+                    log('Alarm fired', 'warn');
+                    showOnly('prompt');
+                } else {
+                    dotEl.className = 'dot';
+                    statusText.textContent = 'No active alarm';
+                    log('Alarm cleared — blocking access', 'info');
+                    stopWebRTC();
+                    showOnly('blocked');
+                    document.getElementById('blockedScreen').innerHTML = '<div class="lock">🔒</div>No active alarm. Stream is unavailable.';
+                }
+            });
         }
     </script>
 </body>
+
 </html>

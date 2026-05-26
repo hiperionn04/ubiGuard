@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Camera Node</title>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Courier New', monospace;
             background: #0a0a0a;
@@ -11,6 +19,7 @@
             min-height: 100vh;
             padding: 24px;
         }
+
         header {
             display: flex;
             align-items: center;
@@ -19,16 +28,46 @@
             padding-bottom: 16px;
             border-bottom: 1px solid #222;
         }
+
         .dot {
-            width: 10px; height: 10px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: #444;
             transition: background 0.3s;
         }
-        .dot.streaming { background: #48bb78; box-shadow: 0 0 6px #48bb7888; }
-        .dot.waiting   { background: #ed8933; box-shadow: 0 0 6px #ed893388; animation: pulse 1.4s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        h1 { font-size: 14px; font-weight: normal; letter-spacing: 0.1em; color: #888; text-transform: uppercase; }
+
+        .dot.streaming {
+            background: #48bb78;
+            box-shadow: 0 0 6px #48bb7888;
+        }
+
+        .dot.waiting {
+            background: #ed8933;
+            box-shadow: 0 0 6px #ed893388;
+            animation: pulse 1.4s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.4
+            }
+        }
+
+        h1 {
+            font-size: 14px;
+            font-weight: normal;
+            letter-spacing: 0.1em;
+            color: #888;
+            text-transform: uppercase;
+        }
+
         .status-bar {
             background: #111;
             border: 1px solid #222;
@@ -38,7 +77,11 @@
             color: #aaa;
             margin-bottom: 16px;
         }
-        .status-bar span { color: #e0e0e0; }
+
+        .status-bar span {
+            color: #e0e0e0;
+        }
+
         video {
             width: 100%;
             max-width: 480px;
@@ -48,6 +91,7 @@
             display: block;
             margin-bottom: 16px;
         }
+
         #log {
             font-size: 11px;
             background: #0d0d0d;
@@ -60,12 +104,25 @@
             color: #555;
             line-height: 1.6;
         }
-        #log .ok   { color: #48bb78; }
-        #log .err  { color: #e53e3e; }
-        #log .info { color: #4299e1; }
-        #log .warn { color: #ed8933; }
+
+        #log .ok {
+            color: #48bb78;
+        }
+
+        #log .err {
+            color: #e53e3e;
+        }
+
+        #log .info {
+            color: #4299e1;
+        }
+
+        #log .warn {
+            color: #ed8933;
+        }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -86,22 +143,22 @@
             from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
         const app = initializeApp({
-            apiKey:      "AIzaSyCY4Hbw2Dhc7HbZovdG_uPPjkfECsMAS98",
-            authDomain:  "esp-project-adbef.firebaseapp.com",
+            apiKey: "AIzaSyCY4Hbw2Dhc7HbZovdG_uPPjkfECsMAS98",
+            authDomain: "esp-project-adbef.firebaseapp.com",
             databaseURL: "https://esp-project-adbef-default-rtdb.europe-west1.firebasedatabase.app/",
-            projectId:   "esp-project-adbef",
+            projectId: "esp-project-adbef",
         });
-        const db   = getDatabase(app);
+        const db = getDatabase(app);
         const auth = getAuth(app);
 
         const ALARM_UID = "alarm_3076F5F04D70";
-        const basePath  = `/alarms/${ALARM_UID}`;
+        const basePath = `/alarms/${ALARM_UID}`;
 
         const paths = {
-            isFired:          `${basePath}/isFired`,
-            streamRequested:  `${basePath}/webrtc/streamRequested`,
-            offer:            `${basePath}/webrtc/offer`,
-            answer:           `${basePath}/webrtc/answer`,
+            isFired: `${basePath}/isFired`,
+            streamRequested: `${basePath}/webrtc/streamRequested`,
+            offer: `${basePath}/webrtc/offer`,
+            answer: `${basePath}/webrtc/answer`,
             callerCandidates: `${basePath}/webrtc/callerCandidates`,
             viewerCandidates: `${basePath}/webrtc/viewerCandidates`,
         };
@@ -109,24 +166,24 @@
         const iceServers = {
             iceServers: [
                 { urls: "stun:stun.relay.metered.ca:80" },
-                { urls: "turn:global.relay.metered.ca:80",                username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
-                { urls: "turn:global.relay.metered.ca:80?transport=tcp",  username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
-                { urls: "turn:global.relay.metered.ca:443",               username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
-                { urls: "turns:global.relay.metered.ca:443?transport=tcp",username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turn:global.relay.metered.ca:80", username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turn:global.relay.metered.ca:443", username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
+                { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: "8925165006e017a481028666", credential: "agRZH6av4wFPruzm" },
             ]
         };
 
-        const videoEl    = document.getElementById('myVideo');
+        const videoEl = document.getElementById('myVideo');
         const statusText = document.getElementById('statusText');
-        const dotEl      = document.getElementById('dot');
-        const logEl      = document.getElementById('log');
+        const dotEl = document.getElementById('dot');
+        const logEl = document.getElementById('log');
 
         let localStream = null;
-        let pc          = null;
+        let pc = null;
         let alarmActive = false;
 
         function log(msg, type = 'info') {
-            const ts   = new Date().toLocaleTimeString();
+            const ts = new Date().toLocaleTimeString();
             const span = document.createElement('span');
             span.className = type;
             span.textContent = `[${ts}] ${msg}\n`;
@@ -134,45 +191,39 @@
             logEl.scrollTop = logEl.scrollHeight;
         }
 
-        // ── Auth ─────────────────────────────────────────────────────────────
         await signInAnonymously(auth);
         log('Signed in anonymously ✅', 'ok');
 
-        // ── Watch isFired ────────────────────────────────────────────────────
-        // Camera doesn't start here — it only tracks the alarm state so it
-        // knows whether streamRequested is legitimate.
         onValue(ref(db, paths.isFired), (snap) => {
             alarmActive = snap.val() === true;
             if (alarmActive) {
-                dotEl.className        = 'dot waiting';
+                dotEl.className = 'dot waiting';
                 statusText.textContent = 'Alarm active — waiting for viewer to open stream';
                 log('Alarm fired — standby for stream request', 'warn');
             } else {
-                dotEl.className        = 'dot';
+                dotEl.className = 'dot';
                 statusText.textContent = 'Idle — awaiting alarm';
                 log('Alarm cleared — stopping stream', 'info');
                 stopAll();
             }
         });
 
-        // ── Watch streamRequested ────────────────────────────────────────────
         onValue(ref(db, paths.streamRequested), async (snap) => {
             if (snap.val() === true && alarmActive) {
                 log('Viewer opened stream — starting camera', 'ok');
-                dotEl.className        = 'dot streaming';
+                dotEl.className = 'dot streaming';
                 statusText.textContent = 'Streaming live';
                 await startWebRTC();
             } else if (!snap.val() && pc) {
                 log('Stream closed by viewer', 'warn');
                 stopWebRTC();
                 if (alarmActive) {
-                    dotEl.className        = 'dot waiting';
+                    dotEl.className = 'dot waiting';
                     statusText.textContent = 'Alarm active — waiting for viewer to open stream';
                 }
             }
         });
 
-        // ── Start WebRTC ─────────────────────────────────────────────────────
         async function startWebRTC() {
             if (pc) { log('Already streaming — skipping', 'warn'); return; }
 
@@ -188,7 +239,7 @@
 
             pc = new RTCPeerConnection(iceServers);
             pc.oniceconnectionstatechange = () => log(`ICE: ${pc.iceConnectionState}`, 'info');
-            pc.onconnectionstatechange    = () => log(`Connection: ${pc.connectionState}`, 'info');
+            pc.onconnectionstatechange = () => log(`Connection: ${pc.connectionState}`, 'info');
 
             localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
@@ -204,21 +255,21 @@
             await set(ref(db, paths.offer), { type: offer.type, sdp: offer.sdp });
             log('Offer pushed — awaiting viewer answer...', 'info');
 
-            const pendingCandidates    = [];
-            let   remoteDescriptionSet = false;
+            const pendingCandidates = [];
+            let remoteDescriptionSet = false;
 
             onChildAdded(ref(db, paths.viewerCandidates), (snap) => {
                 if (!snap.val()) return;
                 if (remoteDescriptionSet) {
                     pc.addIceCandidate(new RTCIceCandidate(snap.val()))
-                      .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
+                        .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
                 } else {
                     pendingCandidates.push(snap.val());
                     log('Queued viewer ICE candidate', 'info');
                 }
             });
 
-            const answerRef   = ref(db, paths.answer);
+            const answerRef = ref(db, paths.answer);
             const unsubAnswer = onValue(answerRef, async (snap) => {
                 if (!snap.val() || remoteDescriptionSet) return;
                 if (pc.signalingState === 'stable') { log('Already stable — ignoring answer', 'warn'); return; }
@@ -228,7 +279,7 @@
                     log('Remote description set ✅', 'ok');
                     for (const c of pendingCandidates) {
                         await pc.addIceCandidate(new RTCIceCandidate(c))
-                                .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
+                            .catch(e => log(`addIceCandidate error: ${e.message}`, 'err'));
                     }
                     pendingCandidates.length = 0;
                     off(answerRef, 'value', unsubAnswer);
@@ -238,23 +289,22 @@
             });
         }
 
-        // ── Stop WebRTC signalling only ───────────────────────────────────────
         function stopWebRTC() {
             if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
-            if (pc)          { pc.close(); pc = null; }
+            if (pc) { pc.close(); pc = null; }
             videoEl.srcObject = null;
-            set(ref(db, `${basePath}/webrtc/offer`),            null);
-            set(ref(db, `${basePath}/webrtc/answer`),           null);
+            set(ref(db, `${basePath}/webrtc/offer`), null);
+            set(ref(db, `${basePath}/webrtc/answer`), null);
             set(ref(db, `${basePath}/webrtc/callerCandidates`), null);
             set(ref(db, `${basePath}/webrtc/viewerCandidates`), null);
             log('WebRTC stopped and signalling cleared', 'info');
         }
 
-        // ── Stop everything (alarm cleared) ──────────────────────────────────
         function stopAll() {
             stopWebRTC();
             set(ref(db, paths.streamRequested), null);
         }
     </script>
 </body>
+
 </html>

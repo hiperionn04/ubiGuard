@@ -192,5 +192,8 @@
     <string name="notification_left_home_desc">Parece que se afastou do alarme \'%1$s\'. Quer armar o sistema?</string>
     <string name="action_arm_now">Armar Agora</string>
     <string name="toast_armed_remotely">Alarme armado remotamente!</string>
+    <string name="toast_emergency_wifi">Wifi de Emergencia ligado!</string>
+    <string name="cam_live">Câmera ao Vivo</string>
+
 
 </resources>

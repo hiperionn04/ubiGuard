@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
+    implementation(libs.identity.jvm)
     implementation(libs.material)
     implementation(libs.play.services.location)
     testImplementation(libs.junit)
