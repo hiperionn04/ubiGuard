@@ -1,3 +1,10 @@
+/*
+AUTHORS:
+Afonso Simões - 73204
+Francisca Inácio - 73986
+Nasha Bagasse - 60913
+*/
+
 #include <Keypad.h>
 #include <DHT.h>
 #include <Wire.h>
@@ -7,7 +14,6 @@
 #include <time.h> 
 #include <vector>
 
-// === Bibliotecas Wi-Fi e Firebase ===
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 #include <WiFiManager.h>
@@ -16,18 +22,24 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-// === Credenciais Firebase ===
+/*
+Firebase keys
+*/
 #define FIREBASE_API_KEY "AIzaSyCgQ5-OmUPRlFlopVW7nrqnwSy5xcNmqdk"
 #define FIREBASE_DATABASE_URL "https://ubiguard-sim-default-rtdb.europe-west1.firebasedatabase.app/"
 
-// === Objetos Firebase ===
+/*
+Firebase
+*/
 FirebaseData fbdo;         
 FirebaseData streamFbdo;   
 FirebaseAuth auth;
 FirebaseConfig config;
 bool signupOK = false;
 
-// === Sensores ===
+/*
+Sensor Pins
+*/
 #define DOOR_SENSOR_PIN 16   
 #define PIR_SENSOR_PIN  34   
 #define DHT_PIN         15 
@@ -39,24 +51,32 @@ unsigned long lastHeartbeat = 0;
 float lastTemp = 0.0;
 WebServer server(80);
 
-// === Gestão Offline ===
+/*
+Offline
+*/
 std::vector<String> offlineLogs;
 const int MAX_OFFLINE_LOGS = 50;
 bool wasOffline = false;
 bool emergencyAPActive = false;
 
-// === Atuadores ===
+/*
+Actuators
+*/
 #define LED_GREEN_PIN   4    
 #define LED_RED_PIN     2    
 #define BUZZER_PIN      17   
 
-// === OLED Display ===
+/*
+Oled Display
+*/
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET    -1 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// === Keypad 4x4 ===
+/*
+Keypad 4x4
+*/
 const byte ROWS = 4;
 const byte COLS = 4;
 char keys[COLS][ROWS] = {
@@ -69,7 +89,9 @@ byte colPins[COLS] = {27, 14, 12, 13};
 byte rowPins[ROWS] = {32, 33, 25, 26};  
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-// === Estado do sistema ===
+/*
+Alarm State
+*/
 Preferences preferences;     
 String CORRECT_PIN = ""; 
 String alarmUID = ""; 
@@ -84,19 +106,21 @@ bool isActivated = false;
 int lastDoorState = HIGH;
 int lastPirState  = LOW;
 
-// === Relógio Interno ===
 unsigned long lastMinuteTick = 0;
 int currentHour = 0;
 int currentMinute = 0;
 
-// ==========================================
-// FUNÇÕES AUXILIARES E LOGS
-// ==========================================
+/*
+Updates the Leds if is armed.
+*/
 void updateLeds() {
   digitalWrite(LED_GREEN_PIN, armed ? LOW : HIGH);
   digitalWrite(LED_RED_PIN,   armed ? HIGH : LOW);
 }
 
+/*
+Add logs when something happens in the code. If there is WiFi connection then it sends to database, if not saves it in local cache.
+*/
 void addLog(String message) {
   if (!signupOK || !isActivated) return;
 
@@ -121,6 +145,9 @@ void addLog(String message) {
   }
 }
 
+/*
+Updates the display depending on the state.
+*/
 void updateDisplay() {
   display.clearDisplay();
 
@@ -173,10 +200,9 @@ void updateDisplay() {
   display.display();
 }
 
-// ==========================================
-// FUNÇÕES DE PROCESSAMENTO DE DADOS 
-// (Usadas pelo Stream para não repetir código)
-// ==========================================
+/*
+Process the PIN change.
+*/
 void processPinChange(String novoPin) {
   if (novoPin != "" && novoPin != CORRECT_PIN) {
     CORRECT_PIN = novoPin;
@@ -187,6 +213,9 @@ void processPinChange(String novoPin) {
   }
 }
 
+/*
+Process the status of the alarm
+*/
 void processStatusChange(String novoStatus) {
   if (novoStatus == "Armado" && !armed) {
     armed = true;
@@ -209,6 +238,9 @@ void processStatusChange(String novoStatus) {
   }
 }
 
+/*
+Creates the password for Emergency WiFi
+*/
 String getEmergenciaPassword() {
   String pass = CORRECT_PIN;
   
@@ -221,17 +253,13 @@ String getEmergenciaPassword() {
   return pass;
 }
 
-// ==========================================
-// FUNÇÕES DE STREAM (FIREBASE -> ESP32)
-// ==========================================
+/*
+Stream to the Firebase
+*/
 void streamCallback(FirebaseStream data) {
   String path = data.dataPath(); 
   String dataType = data.dataType(); 
 
-  // Descomenta a linha abaixo se quiseres ver no Serial Monitor a estrutura dos dados que chegam
-  // Serial.println("[STREAM] Evento: " + path + " | Tipo: " + dataType);
-
-  // 1. Alteração direta de um único campo
   if (path == "/pin") {
     processPinChange(data.stringData());
   }
@@ -239,7 +267,6 @@ void streamCallback(FirebaseStream data) {
     processStatusChange(data.stringData());
   }
   
-  // 2. Alteração por "Pacote" JSON (Ex: quando a App usa updateChildren)
   else if (path == "/" && dataType == "json") {
     FirebaseJson json;
     json.setJsonData(data.payload()); 
@@ -259,9 +286,9 @@ void streamTimeoutCallback(bool timeout) {
   if (timeout) Serial.println("[FIREBASE] Stream timeout. A reconectar...");
 }
 
-// ==========================================
-// SETUP
-// ==========================================
+/*
+Setups all the project
+*/
 void setup() {
   Serial.begin(115200);
   delay(1000); 
@@ -275,9 +302,9 @@ void setup() {
   display.clearDisplay();
   display.display();
 
-// ==========================================
-  // LIGAR AO WI-FI (WIFI MANAGER)
-  // ==========================================
+/*
+WiFi Manager to configure the WiFi
+*/
   display.clearDisplay();
   display.setCursor(0, 20); 
   display.print("A iniciar Wi-Fi..."); 
@@ -285,8 +312,6 @@ void setup() {
 
   WiFiManager wm;
   
-  // wm.resetSettings(); // Descomenta isto só 1 vez se quiseres forçar o ESP a esquecer a rede antiga
-
   String apName = "UbiGuard_" + alarmUID.substring(6); 
 
   if (!wm.autoConnect(apName.c_str())) {
@@ -311,7 +336,9 @@ void setup() {
   display.display();
   delay(1000);
 
-  // CONFIGURAR HORA PELA INTERNET (NTP)
+  /*
+  Configures hour by the internet.
+  */
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
   setenv("TZ", "WET0WEST,M3.5.0/1,M10.5.0", 1);
   tzset();
@@ -321,7 +348,9 @@ void setup() {
   streamFbdo.setBSSLBufferSize(4096, 1024);
   fbdo.setResponseSize(1024);
 
-  // CONFIGURAR FIREBASE
+  /*
+  Firebase configuration
+  */
   config.api_key = FIREBASE_API_KEY;
   config.database_url = FIREBASE_DATABASE_URL;
   if (Firebase.signUp(&config, &auth, "", "")) {
@@ -333,7 +362,9 @@ void setup() {
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
 
-  // LER MEMÓRIA E GERAR UID 
+  /*
+  Reads prefences and data on the ESP and generate UID.
+  */
   preferences.begin("alarme", false); 
   CORRECT_PIN = preferences.getString("pin", ""); 
   alarmUID = preferences.getString("uid", "");
@@ -347,7 +378,7 @@ void setup() {
     Serial.println("[SISTEMA] Novo UID gerado: " + alarmUID);
   }
   
-  // MODO PRIMEIRA UTILIZAÇÃO
+  // First usage of the alarm
   if (CORRECT_PIN == "") {
     setupMode = true; 
     Serial.println("[SISTEMA] Aguardar definicao de PIN no teclado...");
@@ -399,9 +430,9 @@ void setup() {
     }
   }
 
-  // =========================================================
-  // MODO STANDBY - MOSTRA O ID NO ECRÃ PARA O INSTALADOR
-  // =========================================================
+  /*
+  Installer Configuration
+  */
   if (!isActivated) {
     Serial.println("[SISTEMA] Aguardando instalador na App...");
     
@@ -413,7 +444,6 @@ void setup() {
     display.setCursor(0, 25); 
     display.print("ID do Alarme:");
     
-    // Mostra o UID
     display.setCursor(0, 40); 
     display.print(alarmUID); 
     display.display();
@@ -441,7 +471,9 @@ void setup() {
     }
   }
 
-// INICIAR ESCUTA FIREBASE
+  /*
+  Starts listening to Firebase events.
+  */
   if (signupOK) {
     String alarmPath = "/alarms/" + alarmUID;
     Firebase.RTDB.setStringAsync(&fbdo, (alarmPath + "/network/ssid").c_str(), WiFi.SSID());
@@ -450,7 +482,6 @@ void setup() {
     Firebase.RTDB.setStreamCallback(&streamFbdo, streamCallback, streamTimeoutCallback);
   }
 
-  // INICIALIZAÇÃO DE SENSORES
   dht.begin();
   pinMode(DOOR_SENSOR_PIN, INPUT_PULLUP); 
   pinMode(PIR_SENSOR_PIN,  INPUT);
@@ -471,11 +502,10 @@ void setup() {
   addLog("Sistema Ligado e Operacional");
 
 
-  // ==========================================
-  // SERVIDOR DE EMERGÊNCIA (LOCAL API)
-  // ==========================================
-  
-  // Rota 1: A App pede o Estado do Alarme
+  /*
+  Emergency Server (Local)
+  */
+  // Route 1 - /status
   server.on("/status", []() {
     StaticJsonDocument<256> doc;
     doc["status"] = armed ? "Armado" : "Desarmado";
@@ -489,7 +519,7 @@ void setup() {
     server.send(200, "application/json", response);
   });
 
-  // Rota 2: A App manda Armar
+  // Route 2 - /armar
   server.on("/armar", []() {
     if (!armed) {
       armed = true;
@@ -502,7 +532,7 @@ void setup() {
     server.send(200, "text/plain", "Armado");
   });
 
-  // Rota 3: A App manda Desarmar
+  // Route 2 - /desarmar
   server.on("/desarmar", []() {
     if (armed) {
       armed = false;
@@ -525,16 +555,14 @@ void syncOfflineData() {
 
   Serial.println("\n[SISTEMA] Ligação restabelecida! A sincronizar dados offline...");
 
-  // 1. Enviar todos os Logs retidos na "Caixa Negra"
   if (offlineLogs.size() > 0) {
     for (String log : offlineLogs) {
       Firebase.RTDB.pushStringAsync(&fbdo, "/alarms/" + alarmUID + "/logs", log);
-      delay(50); // Pausa minúscula para não engasgar a ligação
+      delay(50);
     }
-    offlineLogs.clear(); // Limpar a caixa negra
+    offlineLogs.clear();
   }
 
-  // 2. Atualizar o estado de TUDO de uma só vez na Firebase
   FirebaseJson json;
   json.set("status", armed ? "Armado" : "Desarmado");
   json.set("isFired", (alarmTriggered || fireTriggered));
@@ -545,14 +573,13 @@ void syncOfflineData() {
 
   Firebase.RTDB.updateNodeAsync(&fbdo, "/alarms/" + alarmUID, &json);
 
-  // 3. Avisar que a sincronização terminou
   addLog("Sistema recuperou ligação e sincronizou o estado atual");
   Serial.println("[SISTEMA] Sincronização concluída.\n");
 }
 
-// ==========================================
-// LOOP PRINCIPAL
-// ==========================================
+/*
+Loop
+*/
 void loop() {
   server.handleClient();
 
@@ -582,7 +609,9 @@ void loop() {
   }
 
 
-  // Atualizar Relógio Ecrã 
+  /*
+  Updates the Clock
+  */
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {
     if (currentMinute != timeinfo.tm_min) {
@@ -592,7 +621,9 @@ void loop() {
     }
   }
 
-  // --- Keypad Lógica ---
+  /*
+  Keypad Logic
+  */
   char key = keypad.getKey();
   if (key) {
     if (!alarmTriggered && !fireTriggered) tone(BUZZER_PIN, 2000, 50); 
@@ -676,7 +707,9 @@ void loop() {
     updateDisplay();
   }
 
-  // --- Sensor magnético (porta) ---
+  /*
+  Magnetic Sensor
+  */
   int currentDoorState = digitalRead(DOOR_SENSOR_PIN);
   if (currentDoorState != lastDoorState) {
     if (currentDoorState == LOW) {
@@ -692,7 +725,9 @@ void loop() {
     delay(30); 
   }
 
-  // --- Sensor PIR (movimento) ---
+  /*
+  PIR Sensor
+  */
   int currentPirState = digitalRead(PIR_SENSOR_PIN);
   if (currentPirState != lastPirState) {
     if (currentPirState == HIGH) {
@@ -706,7 +741,9 @@ void loop() {
     delay(30); 
   }
 
-  // --- Disparo do Alarme de Intrusão ---
+  /*
+  Intrusion Alarm Trigger
+  */
   if (armed && currentPirState == HIGH && currentDoorState == HIGH && !alarmTriggered) {
     alarmTriggered = true; 
     Serial.println("[SISTEMA] ALARME DISPAROU!!!");
@@ -718,7 +755,9 @@ void loop() {
     updateDisplay(); 
   }
 
-  // --- Temperatura & Incêndio ---
+    /*
+  Fire Alarm Trigger
+  */
   if (millis() - lastDhtRead > 2000) {
     lastDhtRead = millis(); 
     float temp = dht.readTemperature();
@@ -755,8 +794,10 @@ void loop() {
     }
   }
 
-  // --- Heartbeat (Sinal de Vida para a Firebase) ---
-  if (millis() - lastHeartbeat > 30000) {  // De 30 em 30 segundos
+  /*
+  Heartbeat, so Firebase/App knows that the system is alive.
+  */
+  if (millis() - lastHeartbeat > 30000) {
     lastHeartbeat = millis();
     if (signupOK && isActivated) {
       Firebase.RTDB.setIntAsync(&fbdo, "/alarms/" + alarmUID + "/heartbeat", millis() / 1000);
