@@ -135,6 +135,16 @@
                         android:textColor="#FFFFFF"
                         android:layout_marginBottom="24dp"/>
 
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnViewCamera"
+                        android:layout_width="match_parent"
+                        android:layout_height="65dp"
+                        android:background="@drawable/bg_input"
+                        android:text="@string/open_cam_live"
+                        android:textColor="#00D0FF"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="16dp"/>
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

@@ -194,6 +194,7 @@
     <string name="toast_armed_remotely">Alarme armado remotamente!</string>
     <string name="toast_emergency_wifi">Wifi de Emergencia ligado!</string>
     <string name="cam_live">Câmera ao Vivo</string>
+    <string name="open_cam_live">Ver Câmara ao Vivo</string>
 
 
 </resources>

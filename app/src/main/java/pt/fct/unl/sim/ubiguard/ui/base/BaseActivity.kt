@@ -29,7 +29,6 @@ open class BaseActivity : AppCompatActivity() {
         val menuProfile = findViewById<TextView>(R.id.menuProfile)
         val menuAlarms = findViewById<TextView>(R.id.menuAlarms)
         val menuSensors = findViewById<TextView>(R.id.menuSensors)
-        val menuCamera = findViewById<TextView>(R.id.menuCamera)
         val menuLogs = findViewById<TextView>(R.id.menuLogs)
         val menuLogout = findViewById<TextView>(R.id.menuLogout)
 
@@ -47,7 +46,6 @@ open class BaseActivity : AppCompatActivity() {
                         menuDashboard.visibility = View.VISIBLE
                         menuSensors.visibility = View.VISIBLE
                         menuLogs.visibility = View.VISIBLE
-                        menuCamera.visibility = View.GONE
 
                         menuAlarms.setOnClickListener {
                             drawerLayout.closeDrawer(GravityCompat.START)
@@ -84,29 +82,6 @@ open class BaseActivity : AppCompatActivity() {
                         menuDashboard.visibility = View.GONE
                         menuSensors.visibility = View.GONE
                         menuLogs.visibility = View.GONE
-                        menuCamera.visibility = View.VISIBLE
-
-                        menuCamera.setOnClickListener {
-                            drawerLayout.closeDrawer(GravityCompat.START)
-
-                            val userUid = FirebaseAuth.getInstance().currentUser?.uid
-                            if (userUid != null) {
-                                FirebaseDatabase.getInstance().reference.child("users").child(userUid).child("alarms").get()
-                                    .addOnSuccessListener { snapshot ->
-                                        if (snapshot.exists() && snapshot.childrenCount > 0) {
-                                            val meuAlarmId = snapshot.children.first().key
-
-                                            if (this@BaseActivity !is pt.fct.unl.sim.ubiguard.ui.camera.ViewerActivity) {
-                                                val intent = Intent(this@BaseActivity, pt.fct.unl.sim.ubiguard.ui.camera.ViewerActivity::class.java)
-                                                intent.putExtra("ALARM_ID", meuAlarmId)
-                                                startActivity(intent)
-                                            }
-                                        } else {
-                                            Toast.makeText(this@BaseActivity, "Nenhum alarme associado a esta conta.", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                            }
-                        }
 
                         val goToMain = View.OnClickListener {
                             drawerLayout.closeDrawer(GravityCompat.START)

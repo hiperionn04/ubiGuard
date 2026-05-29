@@ -83,6 +83,12 @@ class UserAlarmDetailsActivity : BaseActivity() {
         findViewById<Button>(R.id.btnToggleAlarm).setOnClickListener { toggleAlarmStatus() }
         findViewById<TextView>(R.id.btnAddGuest).setOnClickListener { showAddGuestDialog() }
 
+        findViewById<AppCompatButton>(R.id.btnViewCamera).setOnClickListener {
+            val intent = Intent(this, pt.fct.unl.sim.ubiguard.ui.camera.ViewerActivity::class.java)
+            intent.putExtra("ALARM_ID", alarmId)
+            startActivity(intent)
+        }
+
         findViewById<Button>(R.id.btnUserLogs).setOnClickListener {
             val intent = Intent(this, UserLogsActivity::class.java)
             intent.putExtra("ALARM_ID", alarmId)

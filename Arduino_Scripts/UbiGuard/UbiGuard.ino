@@ -344,9 +344,9 @@ WiFi Manager to configure the WiFi
   tzset();
 
   config.timeout.serverResponse = 10 * 1000;      
-  fbdo.setBSSLBufferSize(4096, 1024);
-  streamFbdo.setBSSLBufferSize(4096, 1024);
-  fbdo.setResponseSize(1024);
+  fbdo.setBSSLBufferSize(8192, 2048);
+  streamFbdo.setBSSLBufferSize(8192, 2048);
+  fbdo.setResponseSize(2048);
 
   /*
   Firebase configuration

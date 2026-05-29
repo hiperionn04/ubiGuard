@@ -196,5 +196,6 @@
     <string name="toast_armed_remotely">Alarm armed remotely!</string>
     <string name="toast_emergency_wifi">Emergency WiFi On</string>
     <string name="cam_live">Live Camera</string>
+    <string name="open_cam_live">Open Live Camera</string>
 
 </resources>
